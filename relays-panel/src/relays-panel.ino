@@ -1,6 +1,7 @@
 //--- ESP32 Dev kit1
 //---SLAVE---
 
+#include <Arduino.h>
 #include <esp_now.h>              //ESP Wifi Bussystem lib
 #include <WiFi.h>
 //#include <Wire.h>
