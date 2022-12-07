@@ -8,8 +8,8 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/Users/rene/Desktop/Projekte/camper_roof_light Kopie/relays-panel/include",
-                "/Users/rene/Desktop/Projekte/camper_roof_light Kopie/relays-panel/src",
+                "/Users/rene/Desktop/Projekte/camper_roof_light/relays-panel/include",
+                "/Users/rene/Desktop/Projekte/camper_roof_light/relays-panel/src",
                 "/Users/rene/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "/Users/rene/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                 "/Users/rene/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
@@ -236,8 +236,8 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/Users/rene/Desktop/Projekte/camper_roof_light Kopie/relays-panel/include",
-                    "/Users/rene/Desktop/Projekte/camper_roof_light Kopie/relays-panel/src",
+                    "/Users/rene/Desktop/Projekte/camper_roof_light/relays-panel/include",
+                    "/Users/rene/Desktop/Projekte/camper_roof_light/relays-panel/src",
                     "/Users/rene/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "/Users/rene/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                     "/Users/rene/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",

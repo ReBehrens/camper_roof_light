@@ -1,6 +1,7 @@
 //--- ESP32 DEV KIT Board
 //-- MASTER----
 
+#include <Arduino.h>
 #include <WiFi.h>     //WiFi lib
 #include <esp_now.h>  //ESP Wifi Bussystem lib
 #include <U8g2lib.h>

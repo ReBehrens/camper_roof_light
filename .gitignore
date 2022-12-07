@@ -1,3 +1,6 @@
+/relays-panel/.gitignore
+/switch-panel/.gitignore
+
 # Windows thumbnail cache files
 Thumbs.db
 Thumbs.db:encryptable
