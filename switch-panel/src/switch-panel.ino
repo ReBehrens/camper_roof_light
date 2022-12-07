@@ -67,9 +67,7 @@ unsigned long timeStamp = 0;
 // Debug mode for bugs and more =
 bool debugMode = false;        //=
 //===============================
-void debugmode(String message) {
-//  if (debugMode)
-}
+
 
 //__________________________________________________________________________________________________
 // Initialisierung des ESP-NOW systems inkl. reset bei Fehler
@@ -183,33 +181,35 @@ void SendStatus() {
   uint8_t data[sizeof(SP)];
   memcpy(data, &SP, sizeof(SP));
   const uint8_t *peer_addr = slave.peer_addr;
-  Serial.println("Update sending....");
+  (debugMode) ? ( Serial.println("Update sending....")) : (0);
   esp_err_t result = esp_now_send(peer_addr, data, sizeof(data));
-  Serial.print("Send Status: ");
-  if (result == ESP_OK) {
-    Serial.println("Success");
-    Serial.print("Switch1 = ");
-    Serial.println(SP.S1);
-    Serial.print("Switch2 = ");
-    Serial.println(SP.S2);
-    Serial.print("Switch3 = ");
-    Serial.println(SP.S3);
-    Serial.print("Switch4 = ");
-    Serial.println(SP.S4);
+  if (debugMode){
+    Serial.print("Send Status: ");
+    if (result == ESP_OK) {
+      Serial.println("Success");
+      Serial.print("Switch1 = ");
+      Serial.println(SP.S1);
+      Serial.print("Switch2 = ");
+      Serial.println(SP.S2);
+      Serial.print("Switch3 = ");
+      Serial.println(SP.S3);
+      Serial.print("Switch4 = ");
+      Serial.println(SP.S4);
 
-  } else if (result == ESP_ERR_ESPNOW_NOT_INIT) {
-    // How did we get so far!!
-    Serial.println("ESPNOW not Init.");
-  } else if (result == ESP_ERR_ESPNOW_ARG) {
-    Serial.println("Invalid Argument");
-  } else if (result == ESP_ERR_ESPNOW_INTERNAL) {
-    Serial.println("Internal Error");
-  } else if (result == ESP_ERR_ESPNOW_NO_MEM) {
-    Serial.println("ESP_ERR_ESPNOW_NO_MEM");
-  } else if (result == ESP_ERR_ESPNOW_NOT_FOUND) {
-    Serial.println("Peer not found.");
-  } else {
-    Serial.println("Not sure what happened");
+    } else if (result == ESP_ERR_ESPNOW_NOT_INIT) {
+      // How did we get so far!!
+      Serial.println("ESPNOW not Init.");
+    } else if (result == ESP_ERR_ESPNOW_ARG) {
+      Serial.println("Invalid Argument");
+    } else if (result == ESP_ERR_ESPNOW_INTERNAL) {
+      Serial.println("Internal Error");
+    } else if (result == ESP_ERR_ESPNOW_NO_MEM) {
+      Serial.println("ESP_ERR_ESPNOW_NO_MEM");
+    } else if (result == ESP_ERR_ESPNOW_NOT_FOUND) {
+      Serial.println("Peer not found.");
+    } else {
+      Serial.println("Not sure what happened");
+    }
   }
 }
 
@@ -220,10 +220,12 @@ void on_data_sent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   char macStr[18];
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  Serial.print("Last Packet Sent to: ");
-  Serial.println(macStr);
-  Serial.print("Last Packet Send Status: ");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  if (debugMode) {
+    Serial.print("Last Packet Sent to: ");
+    Serial.println(macStr);
+    Serial.print("Last Packet Send Status: ");
+    Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  }
 }
 
 //______________________________________________________________________________________________
@@ -236,6 +238,7 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
   //wir kopieren die Daten in die Datenstruktur
   memcpy(&RS, data, sizeof(RS));
   //und zeigen sie an
+  if (debugMode) {
   Serial.print("Empfangen von ");
   Serial.println(macStr);
   Serial.print("Relais1 = ");
@@ -246,6 +249,7 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
   Serial.print(RS.R3);
   Serial.print("Relais4 = ");
   Serial.print(RS.R4);
+  }
 }
 
 //____________________________________________________________________________________________
@@ -403,6 +407,8 @@ void loop(void) {
     }
   } else {
     // slave pair failed
-    Serial.println("Slave pair failed!");
+    if (debugMode) {
+      Serial.println("Slave pair failed!");
+    }
   }
 }
