@@ -62,6 +62,15 @@ const long sendInterval = 5000;
 unsigned long timeStamp = 0;
 
 //__________________________________________________________________________________________________
+//===============================
+// Debug mode for bugs and more =
+bool debugMode = false;        //=
+//===============================
+void debugmode(String message) {
+//  if (debugMode)
+}
+
+//__________________________________________________________________________________________________
 // Initialisierung des ESP-NOW systems inkl. reset bei Fehler
 void InitESPNow() {
   if (esp_now_init() == ESP_OK) {
@@ -160,6 +169,7 @@ bool manageSlave() {
     Serial.println("No Slave found to process");
     return false;
   }
+  return true;
 }
 
 //______________________________________________________________________________________________
