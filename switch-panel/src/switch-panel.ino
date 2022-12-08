@@ -54,19 +54,24 @@ int qs2 = 0;
 int qs3 = 0;
 int qs4 = 0;
 
+int lqs1 = 0;  // last switch positions
+int lqs2 = 0;
+int lqs3 = 0;
+int lqs4 = 0;
+
 bool Blogo = true;  // Logo bedingungen
 int startup = 0;
 bool rWhileStop = false;
 
 // intervallzeit bestimmen
 const long startInterval = 5000;
-const long sendInterval = 1000;
+const long sendInterval = 500;
 unsigned long timeStamp = 0;
 
 //__________________________________________________________________________________________________
 //===============================
 // Debug mode for bugs and more =
-bool debugMode = false;        //=
+bool debugMode = true;        //=
 //===============================
 
 
@@ -325,7 +330,13 @@ void switchCheck() {
           qs3 = digitalRead(sw3);
           qs4 = digitalRead(sw4);
 
-          SendStatus();
+          if ((qs1 != lqs1) || (qs2 != lqs2) || (qs3 != lqs3) || (qs4 != lqs4)) {
+            SendStatus();
+            lqs1 = qs1;
+            lqs2 = qs2;
+            lqs3 = qs3;
+            lqs4 = qs4;
+          }
 
           if (qs1 == 1) {
             digitalWrite(led1, HIGH);
@@ -411,6 +422,7 @@ void loop(void) {
       if (startup == 0) {
         //Serial.print("startup: " + startup);
         timeStamp = millis();
+        SendStatus();
         ready();
       }
 
