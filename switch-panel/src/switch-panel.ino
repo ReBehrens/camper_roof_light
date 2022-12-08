@@ -56,10 +56,11 @@ int qs4 = 0;
 
 bool Blogo = true;  // Logo bedingungen
 int startup = 0;
+bool rWhileStop = false;
 
 // intervallzeit bestimmen
-const long startInterval = 1000;
-const long sendInterval = 5000;
+const long startInterval = 5000;
+const long sendInterval = 1000;
 unsigned long timeStamp = 0;
 
 //__________________________________________________________________________________________________
@@ -252,6 +253,7 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
   }
 }
 
+//==========================================Display==========================================
 //____________________________________________________________________________________________
 void logo() {
 
@@ -293,69 +295,30 @@ void logo() {
 
   u8g2.sendBuffer();
 }
-
 //____________________________________________________________________________________________
-void setup(void) {
-  u8g2.begin();
-  Serial.begin(115200);
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-
-  pinMode(sw1, INPUT);
-  pinMode(sw2, INPUT);
-  pinMode(sw3, INPUT);
-  pinMode(sw4, INPUT);
-
-  pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
-  pinMode(led3, OUTPUT);
-  pinMode(led4, OUTPUT);
-
-  Serial.println("ESPNow ESP32 als Master");
-  // das ist die mac Adresse vom Master
-  Serial.print("STA MAC: ");
-  Serial.println(WiFi.macAddress());
-  // Init ESPNow with a fallback logic
-  InitESPNow();
-
-  //Wir registrieren die Callback Funktion am Ende des sendevorgangs
-  esp_now_register_send_cb(on_data_sent);
-  //Wir registrieren die Callback Funktion für den Empfang
-  esp_now_register_recv_cb(on_data_recv);
-}
-
-//---------------------
-void loop(void) {
-  // Wenn wir noch keinen Slave gefunden haben suchen wir weiter
-  if (!slaveFound) SlaveScan();
-  if (slaveFound) {
-    //haben wir einen Slave muss er gepaart werden
-    //falls das noch nicht geschehen ist
-    bool isPaired = manageSlave();
-    if (isPaired) {
-      if (startup == 0) {
-        //Serial.print("startup: " + startup);
-        timeStamp = millis();
+void ready() {
+  if (rWhileStop == false) {
+   //Serial.print("startup: " + startup);
+       
         u8g2.clearBuffer();
         u8g2.setFont(u8g2_font_ncenR10_te);
         u8g2.drawUTF8(38, 40, "BEREIT");
         u8g2.sendBuffer();
-        startup++;
-      }
-      if (startup == 1) {
-        //Serial.print("startup: " + startup);
-        if (millis() > sendInterval + timeStamp) {
-          u8g2.clearBuffer();
-          //save the last time you updated the DHT values
-          startup++;
-        }
-      }
-
-      if (startup == 2) {
+      
+      while (rWhileStop == false) {
         //Serial.print("startup: " + startup);
         if (millis() > startInterval + timeStamp) {
-          timeStamp = millis();
-          // save the last time you updated the DHT values
+          rWhileStop = true;
+        }
+      }
+      u8g2.clearBuffer();
+      startup++;
+  }
+}
+//____________________________________________________________________________________________
+//Switch status check
+void switchCheck() {
+  //Serial.print("startup: " + startup);
 
           qs1 = digitalRead(sw1);
           qs2 = digitalRead(sw2);
@@ -402,6 +365,60 @@ void loop(void) {
             Blogo = true;
             logo();
           }
+  
+}
+
+//===========================================================================================
+void setup(void) {
+  u8g2.begin();
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+
+  pinMode(sw1, INPUT);
+  pinMode(sw2, INPUT);
+  pinMode(sw3, INPUT);
+  pinMode(sw4, INPUT);
+
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(led4, OUTPUT);
+
+  Serial.println("ESPNow ESP32 als Master");
+  // das ist die mac Adresse vom Master
+  Serial.print("STA MAC: ");
+  Serial.println(WiFi.macAddress());
+  // Init ESPNow with a fallback logic
+  InitESPNow();
+
+  //Wir registrieren die Callback Funktion am Ende des sendevorgangs
+  esp_now_register_send_cb(on_data_sent);
+  //Wir registrieren die Callback Funktion für den Empfang
+  esp_now_register_recv_cb(on_data_recv);
+}
+
+//---------------------
+void loop(void) {
+  // Wenn wir noch keinen Slave gefunden haben suchen wir weiter
+  if (!slaveFound) SlaveScan();
+  
+  if (slaveFound) {
+    //haben wir einen Slave muss er gepaart werden
+    //falls das noch nicht geschehen ist
+    bool isPaired = manageSlave();
+    if (isPaired) {
+      if (startup == 0) {
+        //Serial.print("startup: " + startup);
+        timeStamp = millis();
+        ready();
+      }
+
+      if (startup == 1) {
+        //Serial.print("startup: " + startup);
+        if (millis() > sendInterval + timeStamp) {
+          switchCheck();
+          timeStamp = millis();
         }
       }
     }
