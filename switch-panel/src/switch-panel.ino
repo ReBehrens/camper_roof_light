@@ -56,6 +56,7 @@ int qs4 = 0;
 
 bool Blogo = true;  // Logo bedingungen
 int startup = 0;
+bool rWhileStop = false;
 
 // intervallzeit bestimmen
 const long startInterval = 1000;
@@ -252,6 +253,7 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
   }
 }
 
+//==========================================Display==========================================
 //____________________________________________________________________________________________
 void logo() {
 
@@ -292,6 +294,32 @@ void logo() {
   u8g2.drawLine(wLH3 + 45, wLV3 - 5, wLH2 + 16, wLV2 - 6);
 
   u8g2.sendBuffer();
+}
+//____________________________________________________________________________________________
+void ready() {
+  if (rWhileStop == false) {
+   //Serial.print("startup: " + startup);
+        timeStamp = millis();
+        u8g2.clearBuffer();
+        u8g2.setFont(u8g2_font_ncenR10_te);
+        u8g2.drawUTF8(38, 40, "BEREIT");
+        u8g2.sendBuffer();
+        startup++;
+      
+      while (rWhileStop == false) {
+        //Serial.print("startup: " + startup);
+        if (millis() > sendInterval + timeStamp) {
+          u8g2.clearBuffer();
+          rWhileStop = true;
+        }
+      }
+      startup++;
+  }
+}
+//____________________________________________________________________________________________
+//Switch status check
+void switchCheck() {
+  
 }
 
 //____________________________________________________________________________________________
