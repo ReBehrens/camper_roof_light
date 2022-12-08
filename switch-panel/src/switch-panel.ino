@@ -261,20 +261,24 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
 //==========================================Display==========================================
 //____________________________________________________________________________________________
 void logo() {
-
+  // H = 1-127; V= 1-64;
   int KV = 32;
   int KH = 64;
   int Kr = 31;
   int vLH1 = 56;
   int vLV1 = 8;
   int vLH2 = 64;
-  int vLV2 = 27;  //V30
+  int vLV2 = 27; 
   int wLH1 = 64;
-  int wLV1 = 37;  //V34
+  int wLV1 = 37; 
   int wLH2 = 56;
   int wLV2 = 56;
   int wLH3 = 41;
-  int wLV3 = 20;  // H 44 V15
+  int wLV3 = 20; 
+
+
+  
+
   //____________________________________________
   u8g2.clearBuffer();
   u8g2.drawCircle(KH, KV, Kr);
@@ -298,7 +302,37 @@ void logo() {
   u8g2.drawLine(wLH3 + 1, wLV3 - 5, wLH2, wLV2 - 6);
   u8g2.drawLine(wLH3 + 45, wLV3 - 5, wLH2 + 16, wLV2 - 6);
 
+  if (debugMode) {
+    warning();
+
+  }
+
   u8g2.sendBuffer();
+}
+//____________________________________________________________________________________________
+void warning() {
+//if the debugmode is activ
+  int debDeH1 = 2;
+  int debDeV1 = 20;
+  int debDeH2 = 10;
+  int debDeV2 = 2;
+  int debDeH3 = 18;
+  int debDeV3 = 20;
+//---
+  int debDAIH1 = 9;
+  int debDAIV1 = 8;
+  int debDAIV2 = 14;
+
+  u8g2.drawLine(debDeH1, debDeV1, debDeH2, debDeV2);
+  u8g2.drawLine(debDeH1, debDeV1, debDeH3, debDeV3);
+  u8g2.drawLine(debDeH2, debDeV2, debDeH3, debDeV3);
+  //---
+  u8g2.drawLine(debDAIH1, debDAIV1, debDAIH1 + 2, debDAIV1);
+  u8g2.drawLine(debDAIH1, debDAIV1, debDAIH1, debDAIV2);
+  u8g2.drawLine(debDAIH1 + 2, debDAIV1, debDAIH1 + 2, debDAIV2);
+  u8g2.drawLine(debDAIH1, debDAIV2, debDAIH1 + 2, debDAIV2);
+
+  u8g2.drawCircle(10, 17, 1);
 }
 //____________________________________________________________________________________________
 void ready() {
@@ -308,6 +342,7 @@ void ready() {
         u8g2.clearBuffer();
         u8g2.setFont(u8g2_font_ncenR10_te);
         u8g2.drawUTF8(38, 40, "BEREIT");
+        if (debugMode) warning();
         u8g2.sendBuffer();
       
       while (rWhileStop == false) {
@@ -371,6 +406,7 @@ void switchCheck() {
             u8g2.setFont(u8g2_font_ncenR10_te);
             u8g2.drawUTF8(38, 30, "Lampe(n)");
             u8g2.drawUTF8(38, 50, "EIN!");
+            if (debugMode) warning();
             u8g2.sendBuffer();
           } else {
             Blogo = true;
