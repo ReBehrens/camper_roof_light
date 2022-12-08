@@ -59,8 +59,8 @@ int startup = 0;
 bool rWhileStop = false;
 
 // intervallzeit bestimmen
-const long startInterval = 1000;
-const long sendInterval = 5000;
+const long startInterval = 5000;
+const long sendInterval = 1000;
 unsigned long timeStamp = 0;
 
 //__________________________________________________________________________________________________
@@ -299,20 +299,20 @@ void logo() {
 void ready() {
   if (rWhileStop == false) {
    //Serial.print("startup: " + startup);
-        timeStamp = millis();
+       
         u8g2.clearBuffer();
         u8g2.setFont(u8g2_font_ncenR10_te);
         u8g2.drawUTF8(38, 40, "BEREIT");
         u8g2.sendBuffer();
-        startup++;
       
       while (rWhileStop == false) {
         //Serial.print("startup: " + startup);
-        if (millis() > sendInterval + timeStamp) {
-          u8g2.clearBuffer();
+        if (millis() > startInterval + timeStamp) {
           rWhileStop = true;
         }
       }
+      timeStamp = millis();
+      u8g2.clearBuffer();
       startup++;
   }
 }
@@ -364,24 +364,12 @@ void loop(void) {
       if (startup == 0) {
         //Serial.print("startup: " + startup);
         timeStamp = millis();
-        u8g2.clearBuffer();
-        u8g2.setFont(u8g2_font_ncenR10_te);
-        u8g2.drawUTF8(38, 40, "BEREIT");
-        u8g2.sendBuffer();
-        startup++;
+        ready();
       }
+
       if (startup == 1) {
         //Serial.print("startup: " + startup);
         if (millis() > sendInterval + timeStamp) {
-          u8g2.clearBuffer();
-          //save the last time you updated the DHT values
-          startup++;
-        }
-      }
-
-      if (startup == 2) {
-        //Serial.print("startup: " + startup);
-        if (millis() > startInterval + timeStamp) {
           timeStamp = millis();
           // save the last time you updated the DHT values
 
