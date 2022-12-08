@@ -66,6 +66,7 @@ bool rWhileStop = false;
 // intervallzeit bestimmen
 const long startInterval = 5000;
 const long sendInterval = 500;
+const long cooldown = 5000;
 unsigned long timeStamp = 0;
 
 //__________________________________________________________________________________________________
@@ -276,9 +277,6 @@ void logo() {
   int wLH3 = 41;
   int wLV3 = 20; 
 
-
-  
-
   //____________________________________________
   u8g2.clearBuffer();
   u8g2.drawCircle(KH, KV, Kr);
@@ -304,7 +302,6 @@ void logo() {
 
   if (debugMode) {
     warning();
-
   }
 
   u8g2.sendBuffer();
@@ -356,6 +353,55 @@ void ready() {
   }
 }
 //____________________________________________________________________________________________
+void lightActiv(){
+  u8g2.clearBuffer();
+  bool modelStop = false;
+  
+  
+  
+  //---- car model 
+
+
+
+
+
+
+  //-----light option
+
+  if (qs1) {
+    // front light
+    //..
+  } else {
+    //..
+  }
+
+  if (qs2) {
+    // right light
+    //..
+  } else {
+    //..
+  }
+
+  if (qs3) {
+    // rear light
+    //..
+  } else {
+    //..
+  }
+
+  if (qs4) {
+    // left light
+    //.. 
+  } else {
+    //..
+  }
+
+  if (debugMode) warning();
+  u8g2.sendBuffer();
+
+}
+
+//____________________________________________________________________________________________
 //Switch status check
 void switchCheck() {
   //Serial.print("startup: " + startup);
@@ -375,41 +421,31 @@ void switchCheck() {
 
           if (qs1 == 1) {
             digitalWrite(led1, HIGH);
-            Blogo = false;
           } else {
             digitalWrite(led1, LOW);
           }
 
           if (qs2 == 1) {
             digitalWrite(led2, HIGH);
-            Blogo = false;
           } else {
             digitalWrite(led2, LOW);
           }
 
           if (qs3 == 1) {
             digitalWrite(led3, HIGH);
-            Blogo = false;
           } else {
             digitalWrite(led3, LOW);
           }
 
           if (qs4 == 1) {
             digitalWrite(led4, HIGH);
-            Blogo = false;
           } else {
             digitalWrite(led4, LOW);
           }
 
           if (qs1 || qs2 || qs3 || qs4 == 1) {
-            u8g2.clearBuffer();
-            u8g2.setFont(u8g2_font_ncenR10_te);
-            u8g2.drawUTF8(38, 30, "Lampe(n)");
-            u8g2.drawUTF8(38, 50, "EIN!");
-            if (debugMode) warning();
-            u8g2.sendBuffer();
+            lightActiv();
           } else {
-            Blogo = true;
             logo();
           }
   
