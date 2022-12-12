@@ -75,6 +75,7 @@ const long startInterval = 5000;
 const long sendInterval = 500;
 const long cooldown = 5000;
 unsigned long timeStamp = 0;
+unsigned long standyTime = 0;           // for display standby by Engine is off
 
 //__________________________________________________________________________________________________
 //===============================
@@ -270,8 +271,12 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
 
 //==========================================Display==========================================
 //____________________________________________________________________________________________
-void logo() {
+void logo(bool engineOn) {
   // H = 1-127; V= 1-64;
+  u8g2.clearBuffer();
+
+if (engineOn == true) {
+
   int KV = 32;
   int KH = 64;
   int Kr = 31;
@@ -308,6 +313,8 @@ void logo() {
   u8g2.drawLine(wLH1 + 2, wLV1 - 2, wLH2 + 16, wLV2 - 6);
   u8g2.drawLine(wLH3 + 1, wLV3 - 5, wLH2, wLV2 - 6);
   u8g2.drawLine(wLH3 + 45, wLV3 - 5, wLH2 + 16, wLV2 - 6);
+}
+  
 
   if (debugMode) {
     warning();
@@ -414,6 +421,7 @@ void lightActiv(){
 //Switch status check
 void switchCheck() {
   //Serial.print("startup: " + startup);
+
           if (digitalRead(vcc)) {
             analogWrite(led6, 10);
             engineOn = true;
@@ -463,17 +471,19 @@ void switchCheck() {
           if (qs1 || qs2 || qs3 || qs4 == 1) {
             lightActiv();
           } else {
-            logo();
+            logo(engineOn);
           }
-
-                    
+       
           if (digitalRead(sw5) == 1) {
             qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
           }
+
           if (qs5 == 1) {
             analogWrite(led5, 10);
           } else {
             analogWrite(led5, LOW);
+            
+            
           }
           
   
