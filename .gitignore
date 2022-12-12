@@ -1,6 +1,7 @@
 /relays-panel/.gitignore
 /switch-panel/.gitignore
 
+
 # Windows thumbnail cache files
 Thumbs.db
 Thumbs.db:encryptable
@@ -9,6 +10,7 @@ ehthumbs_vista.db
 
 # Dump file
 *.stackdump
+
 
 # Folder config file
 [Dd]esktop.ini
@@ -451,3 +453,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+*/platformio.ini
+

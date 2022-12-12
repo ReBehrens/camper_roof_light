@@ -27,6 +27,7 @@ typedef struct SWITCH_POSITION {  //Schalter Position
   int S2 = 0;
   int S3 = 0;
   int S4 = 0;
+  int S5 = 0;
 };
 SWITCH_POSITION SP;  //mit SP. können die variablen abgeruffen etc. werden
 
@@ -43,16 +44,21 @@ const int sw1 = 33;  // definition der schalterpins
 const int sw2 = 25;
 const int sw3 = 26;
 const int sw4 = 27;
+const int sw5 = 32;
+const int vcc = 35;
 
 const int led1 = 19;  // definition der LED pins
 const int led2 = 18;
 const int led3 = 5;
 const int led4 = 17;
+const int led5 = 16;
+const int led6 = 23;
 
 int qs1 = 0;  // abfrage Variablen der schalter
 int qs2 = 0;
 int qs3 = 0;
 int qs4 = 0;
+int qs5 = 0;
 
 int lqs1 = 0;  // last switch positions
 int lqs2 = 0;
@@ -62,6 +68,7 @@ int lqs4 = 0;
 bool Blogo = true;  // Logo bedingungen
 int startup = 0;
 bool rWhileStop = false;
+bool engineOn = false;
 
 // intervallzeit bestimmen
 const long startInterval = 5000;
@@ -184,6 +191,8 @@ void SendStatus() {
   SP.S2 = qs2;
   SP.S3 = qs3;
   SP.S4 = qs4;
+  SP.S5 = qs5;
+
   uint8_t data[sizeof(SP)];
   memcpy(data, &SP, sizeof(SP));
   const uint8_t *peer_addr = slave.peer_addr;
@@ -359,11 +368,19 @@ void ready() {
 //Switch status check
 void switchCheck() {
   //Serial.print("startup: " + startup);
+          if (digitalRead(vcc)) {
+            analogWrite(led6, 10);
+            engineOn = true;
+          } else {
+            analogWrite(led6, LOW);
+            engineOn = false;
+          }
 
           qs1 = digitalRead(sw1);
           qs2 = digitalRead(sw2);
           qs3 = digitalRead(sw3);
           qs4 = digitalRead(sw4);
+          
 
           if ((qs1 != lqs1) || (qs2 != lqs2) || (qs3 != lqs3) || (qs4 != lqs4)) {
             SendStatus();
@@ -412,6 +429,17 @@ void switchCheck() {
             Blogo = true;
             logo();
           }
+
+                    
+          if (digitalRead(sw5) == 1) {
+            qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
+          }
+          if (qs5 == 1) {
+            analogWrite(led5, 10);
+          } else {
+            analogWrite(led5, LOW);
+          }
+          
   
 }
 
@@ -426,11 +454,15 @@ void setup(void) {
   pinMode(sw2, INPUT);
   pinMode(sw3, INPUT);
   pinMode(sw4, INPUT);
+  pinMode(sw5, INPUT);
+  pinMode(vcc, INPUT);
 
   pinMode(led1, OUTPUT);
   pinMode(led2, OUTPUT);
   pinMode(led3, OUTPUT);
   pinMode(led4, OUTPUT);
+  pinMode(led5, OUTPUT);
+  pinMode(led6, OUTPUT);
 
   Serial.println("ESPNow ESP32 als Master");
   // das ist die mac Adresse vom Master
