@@ -65,7 +65,7 @@ int lqs2 = 0;
 int lqs3 = 0;
 int lqs4 = 0;
 
-bool Blogo = true;  // Logo bedingungen
+bool blogo = true;  // Logo bedingungen
 int startup = 0;
 bool rWhileStop = false;
 bool engineOn = false;
@@ -73,7 +73,7 @@ bool engineOn = false;
 // intervallzeit bestimmen
 const long startInterval = 5000;
 const long sendInterval = 500;
-const long cooldown = 5000;
+const long cooldown = 600000;           // 10 min
 unsigned long timeStamp = 0;
 unsigned long standyTime = 0;           // for display standby by Engine is off
 
@@ -276,6 +276,14 @@ void logo(bool engineOn) {
   u8g2.clearBuffer();
 
 if (engineOn == true) {
+  blogo = false;
+} else {
+  if (millis() > cooldown + standyTime) {
+    blogo = true;
+  }
+}
+
+if (blogo == false) {
 
   int KV = 32;
   int KH = 64;
@@ -425,6 +433,7 @@ void switchCheck() {
           if (digitalRead(vcc)) {
             analogWrite(led6, 10);
             engineOn = true;
+            standyTime = millis();
           } else {
             analogWrite(led6, LOW);
             engineOn = false;
