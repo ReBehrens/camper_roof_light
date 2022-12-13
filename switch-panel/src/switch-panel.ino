@@ -27,6 +27,7 @@ typedef struct SWITCH_POSITION {  //Schalter Position
   int S2 = 0;
   int S3 = 0;
   int S4 = 0;
+  int S5 = 0;
 };
 SWITCH_POSITION SP;  //mit SP. können die variablen abgeruffen etc. werden
 
@@ -43,36 +44,45 @@ const int sw1 = 33;  // definition der schalterpins
 const int sw2 = 25;
 const int sw3 = 26;
 const int sw4 = 27;
+const int sw5 = 32;
+const int vcc = 35;
 
 const int led1 = 19;  // definition der LED pins
 const int led2 = 18;
 const int led3 = 5;
 const int led4 = 17;
+const int led5 = 16;
+const int led6 = 23;
 
 int qs1 = 0;  // abfrage Variablen der schalter
 int qs2 = 0;
 int qs3 = 0;
 int qs4 = 0;
+int qs5 = 0;
 
 int lqs1 = 0;  // last switch positions
 int lqs2 = 0;
 int lqs3 = 0;
 int lqs4 = 0;
 
-  
+
+bool blogo = false;  // Logo bedingungen
+
 int startup = 0;
 bool rWhileStop = false;
+bool engineOn = false;
 
 // intervallzeit bestimmen
 const long startInterval = 5000;
 const long sendInterval = 500;
-const long cooldown = 5000;
+const long cooldown = 600000;           // 10 min
 unsigned long timeStamp = 0;
+unsigned long standyTime = 0;           // for display standby by Engine is off
 
 //__________________________________________________________________________________________________
 //===============================
 // Debug mode for bugs and more =
-bool debugMode = true;        //=
+bool debugMode = false;        //=
 //===============================
 
 
@@ -191,6 +201,8 @@ void SendStatus() {
   SP.S2 = qs2;
   SP.S3 = qs3;
   SP.S4 = qs4;
+  SP.S5 = qs5;
+
   uint8_t data[sizeof(SP)];
   memcpy(data, &SP, sizeof(SP));
   const uint8_t *peer_addr = slave.peer_addr;
@@ -267,8 +279,20 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
 
 //==========================================Display==========================================
 //____________________________________________________________________________________________
-void logo() {
+void logo(bool engineOn) {
   // H = 1-127; V= 1-64;
+  u8g2.clearBuffer();
+
+if (engineOn == true) {
+  blogo = false;
+} else {
+  if (millis() > cooldown + standyTime) {
+    blogo = true;
+  }
+}
+
+if (blogo == false) {
+
   int KV = 32;
   int KH = 64;
   int Kr = 31;
@@ -305,6 +329,8 @@ void logo() {
   u8g2.drawLine(wLH1 + 2, wLV1 - 2, wLH2 + 16, wLV2 - 6);
   u8g2.drawLine(wLH3 + 1, wLV3 - 5, wLH2, wLV2 - 6);
   u8g2.drawLine(wLH3 + 45, wLV3 - 5, wLH2 + 16, wLV2 - 6);
+}
+  
 
   if (debugMode) {
     warning();
@@ -360,14 +386,30 @@ void ready() {
 }
 //____________________________________________________________________________________________
 void lightActiv(){
+  int LBoxB = 3;
+  int LBoxL = 20;
+  int LBox1PosH = 54;
+  int LBox1PosV = 6;
+
+  int LBox2PosH = 78;
+  int LBox2PosV = 22;
+
+  int LBox3PosH = 54;
+  int LBox3PosV = 55;
+
+  int LBox4PosH = 47;
+  int LBox4PosV = 22;
+
   u8g2.clearBuffer();
-  bool modelStop = false;
-  
   
   
   //---- car model 
 
 
+  u8g2.drawRFrame(54,12,20,40,7);
+  u8g2.setFont(u8g2_font_t0_12_tr );
+  u8g2.drawUTF8(61, 23, "V");
+  u8g2.drawUTF8(61, 46, "H");
 
 
 
@@ -376,28 +418,42 @@ void lightActiv(){
 
   if (qs1) {
     // front light
-    //..
+    u8g2.drawBox(LBox1PosH, LBox1PosV, LBoxL, LBoxB);
+    u8g2.drawBox(LBox1PosH - 5, LBox1PosV - LBoxB, LBoxL + 10, LBoxB);
+    u8g2.drawBox(LBox1PosH - 10, LBox1PosV - (2 * LBoxB), LBoxL + 20, LBoxB);
   } else {
     //..
   }
 
   if (qs2) {
     // right light
-    //..
+   u8g2.drawBox(LBox2PosH, LBox2PosV, LBoxB, LBoxL);
+   u8g2.drawBox(LBox2PosH + LBoxB, LBox2PosV - 5, LBoxB, LBoxL + 10);
+   u8g2.drawBox(LBox2PosH + (2 * LBoxB), LBox2PosV - 10, LBoxB, LBoxL + 20);
+
   } else {
     //..
   }
 
   if (qs3) {
     // rear light
-    //..
+    u8g2.drawBox(LBox3PosH, LBox3PosV, LBoxL, LBoxB);
+    u8g2.drawBox(LBox3PosH - 5, LBox3PosV + 3, LBoxL + 10, LBoxB);
+    u8g2.drawBox(LBox3PosH - 10, LBox3PosV + 6, LBoxL + 20, LBoxB);
+
   } else {
     //..
   }
 
   if (qs4) {
     // left light
-    //.. 
+
+    u8g2.drawBox(LBox4PosH, LBox4PosV, LBoxB, LBoxL);
+    u8g2.drawBox(LBox4PosH - LBoxB, LBox4PosV - 5, LBoxB, LBoxL + 10);
+    u8g2.drawBox(LBox4PosH - (2 * LBoxB), LBox4PosV - 10, LBoxB, LBoxL + 20);
+    // u8g2.drawBox(44,61,40,3);
+    // u8g2.drawBox(49,58,30,3);
+    // u8g2.drawBox(54,55,20,3);
   } else {
     //..
   }
@@ -412,10 +468,20 @@ void lightActiv(){
 void switchCheck() {
   //Serial.print("startup: " + startup);
 
+          if (digitalRead(vcc)) {
+            analogWrite(led6, 10);
+            engineOn = true;
+            standyTime = millis();
+          } else {
+            analogWrite(led6, LOW);
+            engineOn = false;
+          }
+
           qs1 = digitalRead(sw1);
           qs2 = digitalRead(sw2);
           qs3 = digitalRead(sw3);
           qs4 = digitalRead(sw4);
+          
 
           if ((qs1 != lqs1) || (qs2 != lqs2) || (qs3 != lqs3) || (qs4 != lqs4)) {
             SendStatus();
@@ -452,8 +518,31 @@ void switchCheck() {
           if (qs1 || qs2 || qs3 || qs4 == 1) {
             lightActiv();
           } else {
-            logo();
+            logo(engineOn);
           }
+       
+          if (digitalRead(sw5) == 1) {
+            qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
+          }
+
+          if (qs5 == 1) {
+            analogWrite(led5, 10);
+          } else {
+            analogWrite(led5, LOW);
+            
+            
+          }
+  
+                    
+          if (digitalRead(sw5) == 1) {
+            qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
+          }
+          if (qs5 == 1) {
+            analogWrite(led5, 10);
+          } else {
+            analogWrite(led5, LOW);
+          }
+          
   
 }
 
@@ -468,11 +557,15 @@ void setup(void) {
   pinMode(sw2, INPUT);
   pinMode(sw3, INPUT);
   pinMode(sw4, INPUT);
+  pinMode(sw5, INPUT);
+  pinMode(vcc, INPUT);
 
   pinMode(led1, OUTPUT);
   pinMode(led2, OUTPUT);
   pinMode(led3, OUTPUT);
   pinMode(led4, OUTPUT);
+  pinMode(led5, OUTPUT);
+  pinMode(led6, OUTPUT);
 
   Serial.println("ESPNow ESP32 als Master");
   // das ist die mac Adresse vom Master
