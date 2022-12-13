@@ -494,6 +494,16 @@ void switchCheck() {
             
             
           }
+  
+                    
+          if (digitalRead(sw5) == 1) {
+            qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
+          }
+          if (qs5 == 1) {
+            analogWrite(led5, 10);
+          } else {
+            analogWrite(led5, LOW);
+          }
           
   
 }
