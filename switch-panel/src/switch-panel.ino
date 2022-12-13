@@ -65,7 +65,9 @@ int lqs2 = 0;
 int lqs3 = 0;
 int lqs4 = 0;
 
-bool blogo = true;  // Logo bedingungen
+
+bool blogo = false;  // Logo bedingungen
+
 int startup = 0;
 bool rWhileStop = false;
 bool engineOn = false;
@@ -100,6 +102,12 @@ void InitESPNow() {
 void SlaveScan() {
   int8_t scanResults = WiFi.scanNetworks();
   memset(&slave, 0, sizeof(slave));
+  
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_t0_12_tf);
+  u8g2.drawUTF8(25, 15, "Pairing Mode");
+  if (debugMode) warning();
+  u8g2.sendBuffer();
 
   Serial.println("");
   Serial.println("suche nach Slaves");
