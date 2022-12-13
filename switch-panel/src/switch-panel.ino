@@ -80,7 +80,7 @@ unsigned long standyTime = 0;           // for display standby by Engine is off
 //__________________________________________________________________________________________________
 //===============================
 // Debug mode for bugs and more =
-bool debugMode = true;        //=
+bool debugMode = false;        //=
 //===============================
 
 
@@ -378,14 +378,30 @@ void ready() {
 }
 //____________________________________________________________________________________________
 void lightActiv(){
+  int LBoxB = 3;
+  int LBoxL = 20;
+  int LBox1PosH = 54;
+  int LBox1PosV = 6;
+
+  int LBox2PosH = 78;
+  int LBox2PosV = 22;
+
+  int LBox3PosH = 54;
+  int LBox3PosV = 55;
+
+  int LBox4PosH = 47;
+  int LBox4PosV = 22;
+
   u8g2.clearBuffer();
-  bool modelStop = false;
-  
   
   
   //---- car model 
 
 
+  u8g2.drawRFrame(54,12,20,40,7);
+  u8g2.setFont(u8g2_font_t0_12_tr );
+  u8g2.drawUTF8(61, 23, "V");
+  u8g2.drawUTF8(61, 46, "H");
 
 
 
@@ -394,28 +410,42 @@ void lightActiv(){
 
   if (qs1) {
     // front light
-    //..
+    u8g2.drawBox(LBox1PosH, LBox1PosV, LBoxL, LBoxB);
+    u8g2.drawBox(LBox1PosH - 5, LBox1PosV - LBoxB, LBoxL + 10, LBoxB);
+    u8g2.drawBox(LBox1PosH - 10, LBox1PosV - (2 * LBoxB), LBoxL + 20, LBoxB);
   } else {
     //..
   }
 
   if (qs2) {
     // right light
-    //..
+   u8g2.drawBox(LBox2PosH, LBox2PosV, LBoxB, LBoxL);
+   u8g2.drawBox(LBox2PosH + LBoxB, LBox2PosV - 5, LBoxB, LBoxL + 10);
+   u8g2.drawBox(LBox2PosH + (2 * LBoxB), LBox2PosV - 10, LBoxB, LBoxL + 20);
+
   } else {
     //..
   }
 
   if (qs3) {
     // rear light
-    //..
+    u8g2.drawBox(LBox3PosH, LBox3PosV, LBoxL, LBoxB);
+    u8g2.drawBox(LBox3PosH - 5, LBox3PosV + 3, LBoxL + 10, LBoxB);
+    u8g2.drawBox(LBox3PosH - 10, LBox3PosV + 6, LBoxL + 20, LBoxB);
+
   } else {
     //..
   }
 
   if (qs4) {
     // left light
-    //.. 
+
+    u8g2.drawBox(LBox4PosH, LBox4PosV, LBoxB, LBoxL);
+    u8g2.drawBox(LBox4PosH - LBoxB, LBox4PosV - 5, LBoxB, LBoxL + 10);
+    u8g2.drawBox(LBox4PosH - (2 * LBoxB), LBox4PosV - 10, LBoxB, LBoxL + 20);
+    // u8g2.drawBox(44,61,40,3);
+    // u8g2.drawBox(49,58,30,3);
+    // u8g2.drawBox(54,55,20,3);
   } else {
     //..
   }
