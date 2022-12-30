@@ -6,6 +6,11 @@
 #include <esp_now.h>  //ESP Wifi Bussystem lib
 #include <U8g2lib.h>
 #include <Wire.h>
+#include "RTClib.h"
+#define DS3231_ADDRESS 0x68
+
+RTC_DS3231 rtc;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 #define CHANNEL 1
 
@@ -283,6 +288,8 @@ void logo(bool engineOn) {
   // H = 1-127; V= 1-64;
   u8g2.clearBuffer();
 
+  //clockTime();  // Clock
+
 if (engineOn == true) {
   blogo = false;
 } else {
@@ -463,6 +470,38 @@ void lightActiv(){
 
 }
 
+//===========================================================================================
+//____________________________________________________________________________________________
+//RTC Clock
+void clockTime() {
+  DateTime now = rtc.now();
+
+  int hour = now.hour();
+  int minute = now.minute();
+
+  Serial.print(now.year(), DEC);
+    Serial.print('/');
+    Serial.print(now.month(), DEC);
+    Serial.print('/');
+    Serial.print(now.day(), DEC);
+    Serial.print(" (");
+    Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+    Serial.print(") ");
+    Serial.print(now.hour(), DEC);
+    Serial.print(':');
+    Serial.print(now.minute(), DEC);
+    Serial.print(':');
+    Serial.print(now.second(), DEC);
+    Serial.println();
+
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_t0_12_tr);
+    u8g2.setCursor(5, 40);
+    u8g2.print(now.hour(), DEC); u8g2.print(":"); u8g2.print(now.minute(), DEC);
+    u8g2.sendBuffer();
+
+
+}
 //____________________________________________________________________________________________
 //Switch status check
 void switchCheck() {
@@ -538,6 +577,17 @@ void setup(void) {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
+
+   if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    Serial.flush();
+  }
+
+  if (rtc.lostPower()) {
+    Serial.println("RTC lost power,set time!");
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
+  rtc.disable32K();
 
   pinMode(sw1, INPUT);
   pinMode(sw2, INPUT);
