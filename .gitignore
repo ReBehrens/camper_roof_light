@@ -455,5 +455,5 @@ relays-panel/.vscode/*
 
 # JetBrains Rider
 *.sln.iml
-*/platformio.ini
+
 
