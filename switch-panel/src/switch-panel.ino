@@ -314,6 +314,7 @@ if (engineOn == true) {
 } else {
   if (millis() > cooldown + standyTime) {
     blogo = true;
+    clockTime();
     temperature();
   }
 }
@@ -529,26 +530,17 @@ float getTemp(DeviceAddress deviceAddress) {
 void clockTime() {
   DateTime now = rtc.now();
 
-    // Serial.print(now.year(), DEC);
-    // Serial.print('/');
-    // Serial.print(now.month(), DEC);
-    // Serial.print('/');
-    // Serial.print(now.day(), DEC);
-    // Serial.print(" (");
-    // Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-    // Serial.print(") ");
+  if (debugMode) {
     Serial.print(now.hour(), DEC);
     Serial.print(':');
     Serial.print(now.minute(), DEC);
-    // Serial.print(':');
-    // Serial.print(now.second(), DEC);
-    Serial.println();
+    Serial.print(':');
+  }
 
-    u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_t0_12_tr);
-    u8g2.setCursor(5, 40);
+    u8g2.setCursor(50, 20);
     u8g2.print(now.hour(), DEC); u8g2.print(":"); u8g2.print(now.minute(), DEC);
-    u8g2.sendBuffer();
+    
 
 
 }
