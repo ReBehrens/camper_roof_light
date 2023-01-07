@@ -3,27 +3,45 @@
 
 #include <Arduino.h>
 #include <WiFi.h>     //WiFi lib
-#include <esp_now.h>  //ESP Wifi Bussystem lib
-#include <U8g2lib.h>
-#include <Wire.h>
-#include "RTClib.h"
-#define DS3231_ADDRESS 0x68
+#include <esp_now.h>  //ESP bus-system lib
+#include <U8g2lib.h>  //display
+#include <Wire.h>     //displ. + RTC bus
+#include <OneWire.h>  //temp. bus
+#include <DallasTemperature.h>  //tempsensors
+#include <RTClib.h>   // RTC clock
+#include <math.h>
 
-RTC_DS3231 rtc;
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-
-#define CHANNEL 1
-
+//___ Display___
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* clock=*/22, /* data=*/21, /* reset=*/U8X8_PIN_NONE);
-esp_now_peer_info_t slave;
-
-String ssidName = "Slave";
-String rssipass = "Slave_1_Password";
-bool slaveFound = false;
-
 int screen_h = 0;
 int screen_v = 10;
 String screenOut;
+//___
+
+//___RTC-Clock___
+#define DS3231_ADDRESS 0x68
+RTC_DS3231 rtc;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+//__
+
+//___ Tempsensors___
+#define CHANNEL 1
+#define ONE_WIRE_BUS 15
+#define TEMPERATURE_PRECISION 12
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+
+DeviceAddress insideThermometer  = { 0x28, 0xFF, 0x64, 0x1F, 0x57, 0xAA, 0x16, 0xAC };
+DeviceAddress outsideThermometer = { 0x28, 0xFF, 0x64, 0x1F, 0x57, 0xCF, 0x1C, 0x77 };
+//__
+
+//___ESPMOW___
+String ssidName = "Slave";
+String rssipass = "Slave_1_Password";
+bool slaveFound = false;
+esp_now_peer_info_t slave;
+//___
+
 
 
 // Datenblock zur übermittlung der Daten sowie die benennung der variablen
@@ -80,14 +98,14 @@ bool engineOn = false;
 // intervallzeit bestimmen
 const long startInterval = 5000;
 const long sendInterval = 500;
-const long cooldown = 600000;           // 10 min
+const long cooldown = 1000;           // 10 min
 unsigned long timeStamp = 0;
 unsigned long standyTime = 0;           // for display standby by Engine is off
 
 //__________________________________________________________________________________________________
 //===============================
 // Debug mode for bugs and more =
-bool debugMode = false;        //=
+bool debugMode = true;        //=
 //===============================
 
 
@@ -292,9 +310,12 @@ void logo(bool engineOn) {
 
 if (engineOn == true) {
   blogo = false;
+
 } else {
   if (millis() > cooldown + standyTime) {
     blogo = true;
+    clockTime();
+    temperature();
   }
 }
 
@@ -470,35 +491,56 @@ void lightActiv(){
 
 }
 
+//____________________________________________________________________________________________
+void temperature(){
+  
+  float diff = 0.10;
+  u8g2.setFont(u8g2_font_t0_12_tr);
+  u8g2.setCursor(5, 40);
+  u8g2.print("I: "); u8g2.print(roundf(getTemp(insideThermometer)), 1); u8g2.print("   A: "); u8g2.print(roundf(getTemp(outsideThermometer) + diff), 1);
+  if (debugMode){
+  Serial.print("I:"); Serial.println(getTemp(insideThermometer));
+  Serial.print("A:"); Serial.println(getTemp(outsideThermometer));
+  }
+}
 //===========================================================================================
+//____________________________________________________________________________________________
+//Get Temperature from sensors
+float getTemp(DeviceAddress deviceAddress) {
+  sensors.requestTemperatures();
+  float tempC = sensors.getTempC(deviceAddress);
+  
+  if (tempC == DEVICE_DISCONNECTED_C) {
+    if (debugMode) {
+      Serial.println("Error: Could not read temp. data");
+
+      for (uint8_t i = 0; i < 8; i++) {
+      // zero pad the address if necessary
+      if (deviceAddress[i] < 16) Serial.print("0");
+      Serial.print(deviceAddress[i], HEX);
+      }
+      Serial.println("");
+    }
+    return 999.9;
+  }
+  return tempC;
+}
 //____________________________________________________________________________________________
 //RTC Clock
 void clockTime() {
   DateTime now = rtc.now();
 
-  int hour = now.hour();
-  int minute = now.minute();
-
-  Serial.print(now.year(), DEC);
-    Serial.print('/');
-    Serial.print(now.month(), DEC);
-    Serial.print('/');
-    Serial.print(now.day(), DEC);
-    Serial.print(" (");
-    Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-    Serial.print(") ");
+  if (debugMode) {
     Serial.print(now.hour(), DEC);
     Serial.print(':');
     Serial.print(now.minute(), DEC);
     Serial.print(':');
-    Serial.print(now.second(), DEC);
-    Serial.println();
+  }
 
-    u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_t0_12_tr);
-    u8g2.setCursor(5, 40);
+    u8g2.setCursor(50, 20);
     u8g2.print(now.hour(), DEC); u8g2.print(":"); u8g2.print(now.minute(), DEC);
-    u8g2.sendBuffer();
+    
 
 
 }
@@ -577,8 +619,33 @@ void setup(void) {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
+  sensors.begin();
 
-   if (! rtc.begin()) {
+  sensors.setResolution(insideThermometer, TEMPERATURE_PRECISION);
+  sensors.setResolution(outsideThermometer, TEMPERATURE_PRECISION);
+  if (debugMode) {
+    Serial.print(sensors.getDeviceCount(), DEC); Serial.println(" /2 Temp. sensors found on the bus.");
+    Serial.print("Parasite power is: ");
+    if (sensors.isParasitePowerMode()) {
+      Serial.println("ON");
+    }
+    else {
+      Serial.println("OFF");
+    }
+  }
+  
+  // Must be called before search()
+  oneWire.reset_search();
+  // assigns the first address found to insideThermometer
+  if (!oneWire.search(insideThermometer)) {
+    Serial.println("Unable to find address for insideThermometer");
+  }
+  // assigns the seconds address found to outsideThermometer
+  if (!oneWire.search(outsideThermometer)){
+    Serial.println("Unable to find address for outsideThermometer");
+  }
+
+  if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
     Serial.flush();
   }
