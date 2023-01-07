@@ -44,40 +44,40 @@ esp_now_peer_info_t slave;
 
 
 
-// Datenblock zur übermittlung der Daten sowie die benennung der variablen
-typedef struct SWITCH_POSITION {  //Schalter Position
+// Switch-status Datablock for Sync with the Slaves
+typedef struct SWITCH_POSITION {  //Switch pofsition
   int S1 = 0;
   int S2 = 0;
   int S3 = 0;
   int S4 = 0;
   int S5 = 0;
 };
-SWITCH_POSITION SP;  //mit SP. können die variablen abgeruffen etc. werden
+SWITCH_POSITION SP;  //Short name
 
-typedef struct RELAIS_STATS {  //Feedback vom Relais
+typedef struct RELAIS_STATS {  //Feedback from Slave (relais-status)
   int R1 = 0;
   int R2 = 0;
   int R3 = 0;
   int R4 = 0;
 };
-RELAIS_STATS RS;  //mit RS. können die variablen abgeruffen etc. werden
+RELAIS_STATS RS;  //Short name
 
 
-const int sw1 = 33;  // definition der schalterpins
+const int sw1 = 33;  // variable of inputs (Switche ect.)
 const int sw2 = 25;
 const int sw3 = 26;
 const int sw4 = 27;
 const int sw5 = 32;
 const int vcc = 35;
 
-const int led1 = 19;  // definition der LED pins
+const int led1 = 19;  // variable of outputs (led)
 const int led2 = 18;
 const int led3 = 5;
 const int led4 = 17;
 const int led5 = 16;
 const int led6 = 23;
 
-int qs1 = 0;  // abfrage Variablen der schalter
+int qs1 = 0;  // Temp Switch-status
 int qs2 = 0;
 int qs3 = 0;
 int qs4 = 0;
@@ -89,28 +89,29 @@ int lqs3 = 0;
 int lqs4 = 0;
 
 
-bool blogo = false;  // Logo bedingungen
+bool blogo = false;  // Logo condition
 
 int startup = 0;
 bool rWhileStop = false;
 bool engineOn = false;
 
-// intervallzeit bestimmen
+// Intervals
 const long startInterval = 5000;
 const long sendInterval = 500;
-const long cooldown = 1000;           // 10 min
+const long cooldown = 600000;           // 600000 / 10 min
+//milli()
 unsigned long timeStamp = 0;
-unsigned long standyTime = 0;           // for display standby by Engine is off
+unsigned long standyTimeStamp = 0;           // for display standby by Engine is off
 
 //__________________________________________________________________________________________________
 //===============================
 // Debug mode for bugs and more =
-bool debugMode = true;        //=
+bool debugMode = false;        //=
 //===============================
 
 
 //__________________________________________________________________________________________________
-// Initialisierung des ESP-NOW systems inkl. reset bei Fehler
+// Initialization of the ESP-NOW system incl. reset in case of errors
 void InitESPNow() {
   if (esp_now_init() == ESP_OK) {
     Serial.println("ESPNow Init Succsess");
@@ -121,7 +122,7 @@ void InitESPNow() {
 }
 
 //________________________________________________________________________________________________
-// Suchen nach Slaves
+// searching for Slaves
 void SlaveScan() {
   int8_t scanResults = WiFi.scanNetworks();
   memset(&slave, 0, sizeof(slave));
@@ -145,11 +146,12 @@ void SlaveScan() {
       int32_t RSSI = WiFi.RSSI(i);
       String BSSIDstr = WiFi.BSSIDstr(i);
 
-      // Prüfen ob AP Gerät ein Slave (ssidName) ist
+      // Check if the AP devices are Slave (SSIDNAME)
       if (SSID.indexOf(ssidName) == 0) {
         Serial.println("Slave  gefunden");
 
-        //MAC-Adresse aus der BSSID des Slaves ermitteln und in die Slave info Speichern
+        
+        // Get Mac-adrass from BSSID of slaves and stored it 
         int mac[6];
         if (6 == sscanf(BSSIDstr.c_str(), "%x:%x:%x:%x:%x:%x%c", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5])) {
           for (int ii = 0; ii < 6; ++ii) {
@@ -160,20 +162,18 @@ void SlaveScan() {
         slave.channel = CHANNEL;
         slave.encrypt = 0;
         slaveFound = true;
-        //Ohne dieses break könnte man auch mit mehr als einem Slave verbinden
-        //Wenn keine Verschlüsselung verwendet wird sind bis zu 20 Slaves möglich
+        // for up to 20 slaves (without crypting) must delete the break;
         break;
       }
     }
   }
 
-  //Ram aufreumen
+  //clear ram
   WiFi.scanDelete();
 }
 
 //_____________________________________________________________________________________________
-// Prüfe ob ein Slave bereits gepaart is
-// Sonst wird der Slave mit dem Master gepaart
+// check if a slave connected, otherwise start connecting slaves
 bool manageSlave() {
   if (slave.channel == CHANNEL) {
     const esp_now_peer_info_t *peer = &slave;
@@ -218,6 +218,7 @@ bool manageSlave() {
 }
 
 //______________________________________________________________________________________________
+// sending Datablock to the Slaves
 void SendStatus() {
   SWITCH_POSITION SP;
   SP.S1 = qs1;
@@ -262,8 +263,8 @@ void SendStatus() {
 }
 
 //____________________________________________________________________________________________
-// callback wenn die Daten zum Slave gesendet wurden
-// hier sieht man wenn der Slave nicht erreichbar war
+// callback when the data has been sent to the slave
+// here you can see if the slave was not reachable
 void on_data_sent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   char macStr[18];
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -277,15 +278,15 @@ void on_data_sent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 //______________________________________________________________________________________________
-// callback wenn wir Daten vom Slave bekommen
+// callback when recv data from Slave
 void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
   char macStr[18];
-  //MAC Adresse des Slaves zur Info
+  //MAC adress from Slave
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  //wir kopieren die Daten in die Datenstruktur
+  //copy the data into the local array
   memcpy(&RS, data, sizeof(RS));
-  //und zeigen sie an
+  //show it
   if (debugMode) {
   Serial.print("Empfangen von ");
   Serial.println(macStr);
@@ -312,7 +313,7 @@ if (engineOn == true) {
   blogo = false;
 
 } else {
-  if (millis() > cooldown + standyTime) {
+  if (millis() > cooldown + standyTimeStamp) {
     blogo = true;
     clockTime();
     temperature();
@@ -368,14 +369,14 @@ if (blogo == false) {
 }
 //____________________________________________________________________________________________
 void warning() {
-//if the debugmode is activ
+  //if the debugmode is activ
   int debDeH1 = 2;
   int debDeV1 = 20;
   int debDeH2 = 10;
   int debDeV2 = 2;
   int debDeH3 = 18;
   int debDeV3 = 20;
-//---
+  
   int debDAIH1 = 9;
   int debDAIV1 = 8;
   int debDAIV2 = 14;
@@ -383,7 +384,7 @@ void warning() {
   u8g2.drawLine(debDeH1, debDeV1, debDeH2, debDeV2);
   u8g2.drawLine(debDeH1, debDeV1, debDeH3, debDeV3);
   u8g2.drawLine(debDeH2, debDeV2, debDeH3, debDeV3);
-  //---
+  
   u8g2.drawLine(debDAIH1, debDAIV1, debDAIH1 + 2, debDAIV1);
   u8g2.drawLine(debDAIH1, debDAIV1, debDAIH1, debDAIV2);
   u8g2.drawLine(debDAIH1 + 2, debDAIV1, debDAIH1 + 2, debDAIV2);
@@ -394,22 +395,22 @@ void warning() {
 //____________________________________________________________________________________________
 void ready() {
   if (rWhileStop == false) {
-   //Serial.print("startup: " + startup);
-       
-        u8g2.clearBuffer();
-        u8g2.setFont(u8g2_font_ncenR10_te);
-        u8g2.drawUTF8(38, 40, "BEREIT");
-        if (debugMode) warning();
-        u8g2.sendBuffer();
+    //Serial.print("startup: " + startup);
       
-      while (rWhileStop == false) {
-        //Serial.print("startup: " + startup);
-        if (millis() > startInterval + timeStamp) {
-          rWhileStop = true;
-        }
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_ncenR10_te);
+    u8g2.drawUTF8(38, 40, "BEREIT");
+    if (debugMode) warning();
+    u8g2.sendBuffer();
+      
+    while (rWhileStop == false) {
+      //Serial.print("startup: " + startup);
+      if (millis() > startInterval + timeStamp) {
+        rWhileStop = true;
       }
-      u8g2.clearBuffer();
-      startup++;
+    }
+    u8g2.clearBuffer();
+    startup++;
   }
 }
 //____________________________________________________________________________________________
@@ -430,10 +431,7 @@ void lightActiv(){
 
   u8g2.clearBuffer();
   
-  
   //---- car model 
-
-
   u8g2.drawRFrame(54,12,20,40,7);
   u8g2.setFont(u8g2_font_t0_12_tr );
   u8g2.drawUTF8(61, 23, "V");
@@ -443,7 +441,6 @@ void lightActiv(){
 
 
   //-----light option
-
   if (qs1) {
     // front light
     u8g2.drawBox(LBox1PosH, LBox1PosV, LBoxL, LBoxB);
@@ -458,7 +455,6 @@ void lightActiv(){
    u8g2.drawBox(LBox2PosH, LBox2PosV, LBoxB, LBoxL);
    u8g2.drawBox(LBox2PosH + LBoxB, LBox2PosV - 5, LBoxB, LBoxL + 10);
    u8g2.drawBox(LBox2PosH + (2 * LBoxB), LBox2PosV - 10, LBoxB, LBoxL + 20);
-
   } else {
     //..
   }
@@ -468,20 +464,16 @@ void lightActiv(){
     u8g2.drawBox(LBox3PosH, LBox3PosV, LBoxL, LBoxB);
     u8g2.drawBox(LBox3PosH - 5, LBox3PosV + 3, LBoxL + 10, LBoxB);
     u8g2.drawBox(LBox3PosH - 10, LBox3PosV + 6, LBoxL + 20, LBoxB);
-
   } else {
     //..
   }
 
   if (qs4) {
     // left light
-
     u8g2.drawBox(LBox4PosH, LBox4PosV, LBoxB, LBoxL);
     u8g2.drawBox(LBox4PosH - LBoxB, LBox4PosV - 5, LBoxB, LBoxL + 10);
     u8g2.drawBox(LBox4PosH - (2 * LBoxB), LBox4PosV - 10, LBoxB, LBoxL + 20);
-    // u8g2.drawBox(44,61,40,3);
-    // u8g2.drawBox(49,58,30,3);
-    // u8g2.drawBox(54,55,20,3);
+
   } else {
     //..
   }
@@ -493,18 +485,17 @@ void lightActiv(){
 
 //____________________________________________________________________________________________
 void temperature(){
-  
   float diff = 0.10;
+
   u8g2.setFont(u8g2_font_t0_12_tr);
   u8g2.setCursor(5, 40);
   u8g2.print("I: "); u8g2.print(roundf(getTemp(insideThermometer)), 1); u8g2.print("   A: "); u8g2.print(roundf(getTemp(outsideThermometer) + diff), 1);
   if (debugMode){
-  Serial.print("I:"); Serial.println(getTemp(insideThermometer));
-  Serial.print("A:"); Serial.println(getTemp(outsideThermometer));
+    Serial.print("I:"); Serial.println(getTemp(insideThermometer));
+    Serial.print("A:"); Serial.println(getTemp(outsideThermometer));
   }
 }
 //===========================================================================================
-//____________________________________________________________________________________________
 //Get Temperature from sensors
 float getTemp(DeviceAddress deviceAddress) {
   sensors.requestTemperatures();
@@ -541,75 +532,71 @@ void clockTime() {
     u8g2.setCursor(50, 20);
     u8g2.print(now.hour(), DEC); u8g2.print(":"); u8g2.print(now.minute(), DEC);
     
-
-
 }
 //____________________________________________________________________________________________
 //Switch status check
 void switchCheck() {
   //Serial.print("startup: " + startup);
 
-          if (digitalRead(vcc)) {
-            analogWrite(led6, 10);
-            engineOn = true;
-            standyTime = millis();
-          } else {
-            analogWrite(led6, LOW);
-            engineOn = false;
-          }
+  if (digitalRead(vcc)) {
+    analogWrite(led6, 10);
+    engineOn = true;
+    standyTimeStamp = millis();
+  } else {
+    analogWrite(led6, LOW);
+    engineOn = false;
+  }
 
-          qs1 = digitalRead(sw1);
-          qs2 = digitalRead(sw2);
-          qs3 = digitalRead(sw3);
-          qs4 = digitalRead(sw4);
-          
+  qs1 = digitalRead(sw1);
+  qs2 = digitalRead(sw2);
+  qs3 = digitalRead(sw3);
+  qs4 = digitalRead(sw4);
+  
+  if ((qs1 != lqs1) || (qs2 != lqs2) || (qs3 != lqs3) || (qs4 != lqs4)) {
+    SendStatus();
+    lqs1 = qs1;
+    lqs2 = qs2;
+    lqs3 = qs3;
+    lqs4 = qs4;
+  }
 
-          if ((qs1 != lqs1) || (qs2 != lqs2) || (qs3 != lqs3) || (qs4 != lqs4)) {
-            SendStatus();
-            lqs1 = qs1;
-            lqs2 = qs2;
-            lqs3 = qs3;
-            lqs4 = qs4;
-          }
+  if (qs1 == 1) {
+    digitalWrite(led1, HIGH);
+  } else {
+    digitalWrite(led1, LOW);
+  }
 
-          if (qs1 == 1) {
-            digitalWrite(led1, HIGH);
-          } else {
-            digitalWrite(led1, LOW);
-          }
+  if (qs2 == 1) {
+    digitalWrite(led2, HIGH);
+  } else {
+    digitalWrite(led2, LOW);
+  }
 
-          if (qs2 == 1) {
-            digitalWrite(led2, HIGH);
-          } else {
-            digitalWrite(led2, LOW);
-          }
+  if (qs3 == 1) {
+    digitalWrite(led3, HIGH);
+  } else {
+    digitalWrite(led3, LOW);
+  }
 
-          if (qs3 == 1) {
-            digitalWrite(led3, HIGH);
-          } else {
-            digitalWrite(led3, LOW);
-          }
+  if (qs4 == 1) {
+    digitalWrite(led4, HIGH);
+  } else {
+    digitalWrite(led4, LOW);
+  }
 
-          if (qs4 == 1) {
-            digitalWrite(led4, HIGH);
-          } else {
-            digitalWrite(led4, LOW);
-          }
-
-          if (qs1 || qs2 || qs3 || qs4 == 1) {
-            lightActiv();
-          } else {
-            logo(engineOn);
-          }
-       
-          if (digitalRead(sw5) == 1) {
-            qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
-          }
-          if (qs5 == 1) {
-            analogWrite(led5, 10);
-          } else {
-            analogWrite(led5, LOW);
-          }
+  if (qs1 || qs2 || qs3 || qs4 == 1) {
+    lightActiv();
+  } else {
+    logo(engineOn);
+  }
+  if (digitalRead(sw5) == 1) {
+    qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
+  }
+  if (qs5 == 1) {
+    analogWrite(led5, 10);
+  } else {
+    analogWrite(led5, LOW);
+  }
 
 }
 
@@ -671,26 +658,25 @@ void setup(void) {
   pinMode(led6, OUTPUT);
 
   Serial.println("ESPNow ESP32 als Master");
-  // das ist die mac Adresse vom Master
+  // Mac adress from master
   Serial.print("STA MAC: ");
   Serial.println(WiFi.macAddress());
   // Init ESPNow with a fallback logic
   InitESPNow();
 
-  //Wir registrieren die Callback Funktion am Ende des sendevorgangs
+  // reg. Callback function after sending
   esp_now_register_send_cb(on_data_sent);
-  //Wir registrieren die Callback Funktion für den Empfang
+  // reg. callback function after recv. data 
   esp_now_register_recv_cb(on_data_recv);
 }
 
 //---------------------
 void loop(void) {
-  // Wenn wir noch keinen Slave gefunden haben suchen wir weiter
+  // if not connected with slaves, continue pairing
   if (!slaveFound) SlaveScan();
-  
+
   if (slaveFound) {
-    //haben wir einen Slave muss er gepaart werden
-    //falls das noch nicht geschehen ist
+    // if is a Slave found and not connected, start connecting
     bool isPaired = manageSlave();
     if (isPaired) {
       if (startup == 0) {
