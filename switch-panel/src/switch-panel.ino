@@ -13,8 +13,8 @@
 
 //___ Display___
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* clock=*/22, /* data=*/21, /* reset=*/U8X8_PIN_NONE);
-int screen_h = 0;
-int screen_v = 10;
+char screen_h = 0;
+char screen_v = 10;
 String screenOut;
 //___
 
@@ -46,59 +46,59 @@ esp_now_peer_info_t slave;
 
 // Switch-status Datablock for Sync with the Slaves
 typedef struct SWITCH_POSITION {  //Switch pofsition
-  int S1 = 0;
-  int S2 = 0;
-  int S3 = 0;
-  int S4 = 0;
-  int S5 = 0;
+  bool S1 = 0;
+  bool S2 = 0;
+  bool S3 = 0;
+  bool S4 = 0;
+  bool S5 = 0;
 };
 SWITCH_POSITION SP;  //Short name
 
 typedef struct RELAIS_STATS {  //Feedback from Slave (relais-status)
-  int R1 = 0;
-  int R2 = 0;
-  int R3 = 0;
-  int R4 = 0;
+  bool R1 = 0;
+  bool R2 = 0;
+  bool R3 = 0;
+  bool R4 = 0;
 };
 RELAIS_STATS RS;  //Short name
 
 
-const int sw1 = 33;  // variable of inputs (Switche ect.)
-const int sw2 = 25;
-const int sw3 = 26;
-const int sw4 = 27;
-const int sw5 = 32;
-const int vcc = 35;
+const char sw1 = 33;  // variable of inputs (Switche ect.)
+const char sw2 = 25;
+const char sw3 = 26;
+const char sw4 = 27;
+const char sw5 = 32;
+const char vcc = 35;
 
-const int led1 = 19;  // variable of outputs (led)
-const int led2 = 18;
-const int led3 = 5;
-const int led4 = 17;
-const int led5 = 16;
-const int led6 = 23;
+const char led1 = 19;  // variable of outputs (led)
+const char led2 = 18;
+const char led3 = 5;
+const char led4 = 17;
+const char led5 = 16;
+const char led6 = 23;
 
-int qs1 = 0;  // Temp Switch-status
-int qs2 = 0;
-int qs3 = 0;
-int qs4 = 0;
-int qs5 = 0;
+bool qs1 = 0;  // Temp Switch-status
+bool qs2 = 0;
+bool qs3 = 0;
+bool qs4 = 0;
+bool qs5 = 0;
 
-int lqs1 = 0;  // last switch positions
-int lqs2 = 0;
-int lqs3 = 0;
-int lqs4 = 0;
+bool lqs1 = 0;  // last switch positions
+bool lqs2 = 0;
+bool lqs3 = 0;
+bool lqs4 = 0;
 
 
 bool blogo = false;  // Logo condition
 
-int startup = 0;
+char startup = 0;
 bool rWhileStop = false;
 bool engineOn = false;
 
 // Intervals
-const long startInterval = 5000;
-const long sendInterval = 500;
-const long cooldown = 600000;           // 600000 / 10 min
+const int startInterval = 5000;
+const int sendInterval = 500;
+const int cooldown = 600000;           // 600000 / 10 min
 //milli()
 unsigned long timeStamp = 0;
 unsigned long standyTimeStamp = 0;           // for display standby by Engine is off
@@ -106,7 +106,7 @@ unsigned long standyTimeStamp = 0;           // for display standby by Engine is
 //__________________________________________________________________________________________________
 //===============================
 // Debug mode for bugs and more =
-bool debugMode = false;        //=
+bool debugMode = true;        //=
 //===============================
 
 
@@ -322,19 +322,19 @@ if (engineOn == true) {
 
 if (blogo == false) {
 
-  int KV = 32;
-  int KH = 64;
-  int Kr = 31;
-  int vLH1 = 56;
-  int vLV1 = 8;
-  int vLH2 = 64;
-  int vLV2 = 27; 
-  int wLH1 = 64;
-  int wLV1 = 37; 
-  int wLH2 = 56;
-  int wLV2 = 56;
-  int wLH3 = 41;
-  int wLV3 = 20; 
+  char KV = 32;
+  char KH = 64;
+  char Kr = 31;
+  char vLH1 = 56;
+  char vLV1 = 8;
+  char vLH2 = 64;
+  char vLV2 = 27; 
+  char wLH1 = 64;
+  char wLV1 = 37; 
+  char wLH2 = 56;
+  char wLV2 = 56;
+  char wLH3 = 41;
+  char wLV3 = 20; 
 
   //____________________________________________
   u8g2.clearBuffer();
@@ -370,16 +370,16 @@ if (blogo == false) {
 //____________________________________________________________________________________________
 void warning() {
   //if the debugmode is activ
-  int debDeH1 = 2;
-  int debDeV1 = 20;
-  int debDeH2 = 10;
-  int debDeV2 = 2;
-  int debDeH3 = 18;
-  int debDeV3 = 20;
+  char debDeH1 = 2;
+  char debDeV1 = 20;
+  char debDeH2 = 10;
+  char debDeV2 = 2;
+  char debDeH3 = 18;
+  char debDeV3 = 20;
   
-  int debDAIH1 = 9;
-  int debDAIV1 = 8;
-  int debDAIV2 = 14;
+  char debDAIH1 = 9;
+  char debDAIV1 = 8;
+  char debDAIV2 = 14;
 
   u8g2.drawLine(debDeH1, debDeV1, debDeH2, debDeV2);
   u8g2.drawLine(debDeH1, debDeV1, debDeH3, debDeV3);
@@ -415,19 +415,19 @@ void ready() {
 }
 //____________________________________________________________________________________________
 void lightActiv(){
-  int LBoxB = 3;
-  int LBoxL = 20;
-  int LBox1PosH = 54;
-  int LBox1PosV = 6;
+  char LBoxB = 3;
+  char LBoxL = 20;
+  char LBox1PosH = 54;
+  char LBox1PosV = 6;
 
-  int LBox2PosH = 78;
-  int LBox2PosV = 22;
+  char LBox2PosH = 78;
+  char LBox2PosV = 22;
 
-  int LBox3PosH = 54;
-  int LBox3PosV = 55;
+  char LBox3PosH = 54;
+  char LBox3PosV = 55;
 
-  int LBox4PosH = 47;
-  int LBox4PosV = 22;
+  char LBox4PosH = 47;
+  char LBox4PosV = 22;
 
   u8g2.clearBuffer();
   
@@ -552,6 +552,10 @@ void switchCheck() {
   qs3 = digitalRead(sw3);
   qs4 = digitalRead(sw4);
   
+  if (digitalRead(sw5) == 1) {
+    qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
+  }
+  
   if ((qs1 != lqs1) || (qs2 != lqs2) || (qs3 != lqs3) || (qs4 != lqs4)) {
     SendStatus();
     lqs1 = qs1;
@@ -589,9 +593,8 @@ void switchCheck() {
   } else {
     logo(engineOn);
   }
-  if (digitalRead(sw5) == 1) {
-    qs5 = (qs5 == 0) ? (qs5 = 1) : (qs5 = 0);
-  }
+
+  
   if (qs5 == 1) {
     analogWrite(led5, 10);
   } else {

@@ -11,43 +11,43 @@
 const char *SSID = "Slave_1";
 
 
-const int r1 = 15;         // definition der Relais-ausgänge
-const int r2 = 2;
-const int r3 = 0;
-const int r4 = 4;
+const char r1 = 15;         // definition der Relais-ausgänge
+const char r2 = 2;
+const char r3 = 0;
+const char r4 = 4;
 
-const int in1 = 34;       // definition der Stromkreisüberwachung
-const int in2 = 35;
-const int in3 = 32;
-const int in4 = 33;
+const char in1 = 34;       // definition der Stromkreisüberwachung
+const char in2 = 35;
+const char in3 = 32;
+const char in4 = 33;
 
 
 // Datenblock zur übermittlung der Daten sowie die benennung der variablen
 typedef struct SWITCH_POSITION {    //Schalter Position
-  int S1 = 0;
-  int S2 = 0;
-  int S3 = 0;
-  int S4 = 0;
+  bool S1 = 0;
+  bool S2 = 0;
+  bool S3 = 0;
+  bool S4 = 0;
 };
 SWITCH_POSITION SP;       //mit SP. können die variablen abgeruffen etc. werden
 
 typedef struct RELAIS_STATS {     //Feedback vom Relais
-  int R1 = 0;
-  int R2 = 0;
-  int R3 = 0;
-  int R4 = 0;
+  bool R1 = 0;
+  bool R2 = 0;
+  bool R3 = 0;
+  bool R4 = 0;
 };
 RELAIS_STATS RS;       //mit RS. können die variablen abgeruffen etc. werden
 
-int qs1 = 0;         // abfrage Variablen der schalter
-int qs2 = 0;
-int qs3 = 0;
-int qs4 = 0;
+bool qs1 = 0;         // abfrage Variablen der schalter
+bool qs2 = 0;
+bool qs3 = 0;
+bool qs4 = 0;
 
-int qin1 = 0;         // abfrage Variablen der Relais
-int qin2 = 0;
-int qin3 = 0;
-int qin4 = 0;
+bool qin1 = 0;         // abfrage Variablen der Relais
+bool qin2 = 0;
+bool qin3 = 0;
+bool qin4 = 0;
 
 // intervallzeit bestimmen
 const long interval = 10000; 
