@@ -16,6 +16,6 @@ It has control-LED´s to see which light is on.
 ## The Relais panel
 
 .. will build under the roof basket and controlled the lights around the roof. This is an ESP32 (slave) too.
-
+This program is currently a dummy testing program to test features of the masterboard.
 
 The lights will switched over relays and should be monitored from an input on a ESP to see if a relays will stuck. This should be send to the ESP32 on the Cockpit to see it on the LED´s.
