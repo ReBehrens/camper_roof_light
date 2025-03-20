@@ -67,8 +67,9 @@ const char sw1 = 33;  // variable of inputs (Switche ect.)
 const char sw2 = 25;
 const char sw3 = 26;
 const char sw4 = 27;
-const char sw5 = 32;
-const char vcc = 35;
+const char sw5 = 34;  //32
+const char vcc = 36;  //34
+const char light = 39;
 
 const char led1 = 19;  // variable of outputs (led)
 const char led2 = 18;
@@ -98,7 +99,7 @@ bool engineOn = false;
 // Intervals
 const int startInterval = 5000;
 const int sendInterval = 500;
-const int cooldown = 600000;           // 600000 / 10 min
+const int cooldown = 1000;           // 600000 / 10 min
 //milli()
 unsigned long timeStamp = 0;
 unsigned long standyTimeStamp = 0;           // for display standby by Engine is off
@@ -106,7 +107,7 @@ unsigned long standyTimeStamp = 0;           // for display standby by Engine is
 //__________________________________________________________________________________________________
 //===============================
 // Debug mode for bugs and more =
-bool debugMode = true;        //=
+bool debugMode = false;        //=
 //===============================
 
 
@@ -512,7 +513,7 @@ float getTemp(DeviceAddress deviceAddress) {
       }
       Serial.println("");
     }
-    return 999.9;
+    return 999.0;
   }
   return tempC;
 }
@@ -524,13 +525,13 @@ void clockTime() {
   if (debugMode) {
     Serial.print(now.hour(), DEC);
     Serial.print(':');
-    Serial.print(now.minute(), DEC);
-    Serial.print(':');
+    Serial.println(now.minute(), DEC);
+    
   }
 
     u8g2.setFont(u8g2_font_t0_12_tr);
     u8g2.setCursor(50, 20);
-    u8g2.print(now.hour(), DEC); u8g2.print(":"); u8g2.print(now.minute(), DEC);
+    u8g2.print(now.hour(), DEC); u8g2.print(":"); (now.minute() < 10) ? (u8g2.print("0")) : (0); u8g2.print(now.minute(), DEC);
     
 }
 //____________________________________________________________________________________________
@@ -539,6 +540,7 @@ void switchCheck() {
   //Serial.print("startup: " + startup);
 
   if (digitalRead(vcc)) {
+    Serial.println("vcc on");
     analogWrite(led6, 10);
     engineOn = true;
     standyTimeStamp = millis();
@@ -546,6 +548,18 @@ void switchCheck() {
     analogWrite(led6, LOW);
     engineOn = false;
   }
+  
+  // if (digitalRead(light)){
+  //   Serial.println("Light on");
+  //   analogWrite(led6, 100);
+  //   engineOn = true;
+  //   standyTimeStamp = millis(); 
+  // } else {
+  //   analogWrite(led6, LOW);
+  //   engineOn = false;
+  // }
+
+  
 
   qs1 = digitalRead(sw1);
   qs2 = digitalRead(sw2);
@@ -646,12 +660,13 @@ void setup(void) {
   }
   rtc.disable32K();
 
-  pinMode(sw1, INPUT);
-  pinMode(sw2, INPUT);
-  pinMode(sw3, INPUT);
-  pinMode(sw4, INPUT);
-  pinMode(sw5, INPUT);
+  pinMode(sw1, INPUT_PULLDOWN);
+  pinMode(sw2, INPUT_PULLDOWN);
+  pinMode(sw3, INPUT_PULLDOWN);
+  pinMode(sw4, INPUT_PULLDOWN);
+  pinMode(sw5, INPUT_PULLDOWN);
   pinMode(vcc, INPUT);
+  pinMode(light, INPUT);
 
   pinMode(led1, OUTPUT);
   pinMode(led2, OUTPUT);
