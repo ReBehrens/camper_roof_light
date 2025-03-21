@@ -28,9 +28,7 @@ const char LED6 = 23;
 // ─────────────────────────────
 
 // OneWire for Temperature-Sensors
-// const uint8_t ONE_WIRE_PIN = 15;
 #define ONE_WIRE_PIN 15
-// const uint8_t TEMPERATURE_PRECISION = 12;
 #define TEMPERATURE_PRECISION 12
 
 // RTC
@@ -46,7 +44,6 @@ const uint8_t DISPLAY_RESET_PIN = U8X8_PIN_NONE; // no Reset-connection
 // ─────────────────────────────
 static const String WIFI_SSID = "Slave";
 static const String WIFI_PASSWORD = "Slave_1_Password";
-const uint8_t ESPNOW_CHANNEL = 1;
 #define CHANNEL 1
 
 // ─────────────────────────────

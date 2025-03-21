@@ -1,19 +1,19 @@
 #include "display.h"
 #include "globals.h"
 #include "switches.h"
-#include "sensors.h" // Für getTemp() und RTC
+#include "sensors.h"
 #include <Arduino.h>
 
-// Globales Display-Objekt – verwendet die in globals.h definierten Pins
+// Global Display Object – uses the pins defined in globals.h
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(
     U8G2_R0,
     DISPLAY_CLOCK_PIN,
     DISPLAY_DATA_PIN,
     DISPLAY_RESET_PIN);
 
-// Dynamische Zustandsvariablen, die zur Displaylogik gehören
-bool blogo = true;
-bool rWhileStop = false;
+// Dynamic state variables that belong to display logic
+bool standbyDisplay = true;
+bool latencyStop = false;
 unsigned long readyTimeStamp = 0;
 unsigned long standyTimeStamp = 0;
 
@@ -22,29 +22,22 @@ void displaySetup()
   u8g2.begin();
 }
 
-void displayLoop()
-{
-  // Hier könntest du z. B. abhängig von Zuständen (aus switches.cpp) das Display aktualisieren.
-  // Dieser Platzhalter lässt die Entscheidung extern (z. B. in switchesLoop) treffen.
-}
-
 void logo(bool engineOn)
 {
   u8g2.clearBuffer();
 
-  // Wenn der Motor aus ist und das Cooldown abgelaufen ist, soll das Logo angezeigt werden.
   if (!engineOn && (millis() > COOLDOWN + standyTimeStamp))
   {
-    blogo = true;
+    standbyDisplay = true;
     clockTime();
     temperature();
   }
   else
   {
-    blogo = false;
+    standbyDisplay = false;
   }
 
-  if (!blogo)
+  if (!standbyDisplay)
   {
     char KV = 32;
     char KH = 64;
@@ -120,9 +113,8 @@ void warning()
 
 void ready()
 {
-  if (rWhileStop == false)
+  if (latencyStop == false)
   {
-    // Serial.print("startup: " + startup);
 
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_ncenR10_te);
@@ -132,12 +124,11 @@ void ready()
       warning();
     u8g2.sendBuffer();
 
-    while (rWhileStop == false)
+    while (latencyStop == false)
     {
-      // Serial.print("startup: " + startup);
       if (millis() > START_INTERVAL + readyTimeStamp)
       {
-        rWhileStop = true;
+        latencyStop = true;
         return;
       }
     }
@@ -177,10 +168,6 @@ void lightActiv()
     u8g2.drawBox(LBox1PosH - 5, LBox1PosV - LBoxB, LBoxL + 10, LBoxB);
     u8g2.drawBox(LBox1PosH - 10, LBox1PosV - (2 * LBoxB), LBoxL + 20, LBoxB);
   }
-  else
-  {
-    //..
-  }
 
   if (getQs2())
   {
@@ -188,10 +175,6 @@ void lightActiv()
     u8g2.drawBox(LBox2PosH, LBox2PosV, LBoxB, LBoxL);
     u8g2.drawBox(LBox2PosH + LBoxB, LBox2PosV - 5, LBoxB, LBoxL + 10);
     u8g2.drawBox(LBox2PosH + (2 * LBoxB), LBox2PosV - 10, LBoxB, LBoxL + 20);
-  }
-  else
-  {
-    //..
   }
 
   if (getQs3())
@@ -201,10 +184,6 @@ void lightActiv()
     u8g2.drawBox(LBox3PosH - 5, LBox3PosV + 3, LBoxL + 10, LBoxB);
     u8g2.drawBox(LBox3PosH - 10, LBox3PosV + 6, LBoxL + 20, LBoxB);
   }
-  else
-  {
-    //..
-  }
 
   if (getQs4())
   {
@@ -212,10 +191,6 @@ void lightActiv()
     u8g2.drawBox(LBox4PosH, LBox4PosV, LBoxB, LBoxL);
     u8g2.drawBox(LBox4PosH - LBoxB, LBox4PosV - 5, LBoxB, LBoxL + 10);
     u8g2.drawBox(LBox4PosH - (2 * LBoxB), LBox4PosV - 10, LBoxB, LBoxL + 20);
-  }
-  else
-  {
-    //..
   }
 
   if (debugMode)
@@ -227,7 +202,7 @@ void temperature()
 {
   u8g2.setFont(u8g2_font_t0_12_tr);
   u8g2.setCursor(5, 40);
-  // Hier rufen wir getTemp() aus sensors.cpp auf.
+  // getTemp() from sensors.cpp
   float tempInside = getTemp(insideThermometer);
   float tempOutside = getTemp(outsideThermometer);
   u8g2.print("I: ");
@@ -238,7 +213,6 @@ void temperature()
 
 void clockTime()
 {
-  // Holt die aktuelle Zeit von der RTC
   extern RTC_DS3231 rtc;
   DateTime now = rtc.now();
   if (debugMode)

@@ -2,12 +2,12 @@
 #include "globals.h"
 #include <Arduino.h>
 
-// Globale Objekte für die Sensoren
+// Global Objekte for Sensors
 RTC_DS3231 rtc;
 OneWire oneWire(ONE_WIRE_PIN);
 DallasTemperature sensors(&oneWire);
 
-// Device-Adressen für die Temperatursensoren
+// Device-Adressen for the temperature sensors
 DeviceAddress insideThermometer = {0x28, 0xFF, 0x64, 0x1F, 0x57, 0xAA, 0x16, 0xAC};
 DeviceAddress outsideThermometer = {0x28, 0xFF, 0x64, 0x1F, 0x57, 0xCF, 0x1C, 0x77};
 
@@ -58,11 +58,6 @@ void sensorsSetup()
         rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     }
     rtc.disable32K();
-}
-
-void sensorsLoop()
-{
-    // Periodische Aufgaben, z. B. Sensorwerte aktualisieren.
 }
 
 float getTemp(DeviceAddress deviceAddress)

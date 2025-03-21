@@ -4,7 +4,7 @@
 #include "switches.h"
 #include <Arduino.h>
 
-// Globale Variablen für ESP-NOW (nur hier definiert)
+// Global variable for ESP-NOW
 SWITCH_POSITION SP;
 RELAIS_STATS RS;
 bool slaveFound = false;
@@ -38,9 +38,6 @@ void InitESPNow()
 
 void slaveScan()
 {
-
-    Serial.println("");
-    Serial.println("suche nach Slaves");
     searchingSlaves();
 
     int8_t scanResults = WiFi.scanNetworks();
@@ -85,7 +82,6 @@ void slaveScan()
         }
     }
 
-    // clear ram
     WiFi.scanDelete();
 }
 
@@ -105,13 +101,11 @@ bool manageSlave()
             esp_err_t addStatus = esp_now_add_peer(peer);
             if (addStatus == ESP_OK)
             {
-                // Pair success
                 Serial.println("Pair success");
                 return true;
             }
             else if (addStatus == ESP_ERR_ESPNOW_NOT_INIT)
             {
-                // How did we get so far!!
                 Serial.println("ESPNOW Not Init");
                 return false;
             }
@@ -182,7 +176,6 @@ void SendStatus()
         }
         else if (result == ESP_ERR_ESPNOW_NOT_INIT)
         {
-            // How did we get so far!!
             Serial.println("ESPNOW not Init.");
         }
         else if (result == ESP_ERR_ESPNOW_ARG)
@@ -230,7 +223,6 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
              mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     // copy the data into the local array
     memcpy(&RS, data, sizeof(RS));
-    // show it
     if (debugMode)
     {
         Serial.print("Empfangen von ");

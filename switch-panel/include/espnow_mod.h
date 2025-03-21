@@ -5,7 +5,7 @@
 #include <WiFi.h>
 #include <Arduino.h>
 
-// Strukturen für Schalter- und Relais-Status
+// Structures for Switch and Relay Status
 typedef struct
 {
     bool S1 = 0;
@@ -23,7 +23,6 @@ typedef struct
     bool R4 = 0;
 } RELAIS_STATS;
 
-// Funktionsprototypen
 void espNowFirstSetup();
 void espNowSecondSetup();
 void InitESPNow();

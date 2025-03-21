@@ -65,5 +65,5 @@ void loop()
             Serial.println("Slave pair failed!");
         }
     }
-    delay(100); // kleiner Delay zur Schonung der CPU
+    delay(100); // little Delay for Discharge CPU
 }
