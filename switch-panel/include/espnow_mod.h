@@ -27,10 +27,12 @@ typedef struct
 void espNowSetup();
 void espNowLoop();
 void InitESPNow();
-void SlaveScan();
+void slaveScan();
 bool manageSlave();
 void SendStatus();
 void on_data_sent(const uint8_t *mac_addr, esp_now_send_status_t status);
 void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len);
+
+bool getSlaveFound();
 
 #endif // ESPNOW_MOD_H

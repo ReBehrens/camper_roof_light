@@ -32,6 +32,20 @@ void sensorsSetup()
         }
     }
 
+    // Must be called before search()
+    oneWire.reset_search();
+    // assigns the first address found to insideThermometer
+    if (!oneWire.search(insideThermometer))
+    {
+        Serial.println("Unable to find address for insideThermometer");
+    }
+
+    // assigns the seconds address found to outsideThermometer
+    if (!oneWire.search(outsideThermometer))
+    {
+        Serial.println("Unable to find address for outsideThermometer");
+    }
+
     if (!rtc.begin())
     {
         Serial.println("RTC nicht gefunden");

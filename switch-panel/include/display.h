@@ -15,5 +15,6 @@ void ready();
 void lightActiv();
 void temperature();
 void clockTime();
+void searchingSlaves();
 
 #endif // DISPLAY_H

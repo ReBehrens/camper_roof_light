@@ -52,9 +52,12 @@ const uint8_t ESPNOW_CHANNEL = 1;
 const unsigned long START_INTERVAL = 5000; // 5 Sec
 const unsigned long SEND_INTERVAL = 500;   // 0,5 Sec
 const unsigned long COOLDOWN = 1000;       // 1 Sec
+extern unsigned long timeStamp;
 
 // =============================
 //        Debug-Modus
 const bool debugMode = false;
 // =============================
+
+static int warmup = 0;
 #endif // GLOBALS_H

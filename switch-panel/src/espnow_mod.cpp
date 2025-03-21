@@ -1,5 +1,6 @@
 #include "espnow_mod.h"
 #include "globals.h"
+#include "display.h"
 #include "switches.h"
 #include <Arduino.h>
 
@@ -20,15 +21,7 @@ void espNowSetup()
 
 void espNowLoop()
 {
-    // Beispiel: Falls noch kein Slave gefunden, starte die Suche
-    if (!slaveFound)
-    {
-        SlaveScan();
-    }
-    else
-    {
-        manageSlave();
-    }
+    // optional
 }
 
 void InitESPNow()
@@ -44,7 +37,7 @@ void InitESPNow()
     }
 }
 
-void SlaveScan()
+void slaveScan()
 {
     int8_t scanResults = WiFi.scanNetworks();
     memset(&slave, 0, sizeof(slave));
@@ -60,15 +53,19 @@ void SlaveScan()
         for (int i = 0; i < scanResults; i++)
         {
             String SSID = WiFi.SSID(i);
+            int32_t RSSI = WiFi.RSSI(i);
             String BSSIDstr = WiFi.BSSIDstr(i);
+
+            // Check if the AP devices are Slave (SSIDNAME)
             if (SSID.indexOf(WIFI_SSID) == 0)
             {
                 Serial.println("Slave gefunden");
+
+                // Get Mac-adrass from BSSID of slaves and stored it
                 int mac[6];
-                if (6 == sscanf(BSSIDstr.c_str(), "%x:%x:%x:%x:%x:%x",
-                                &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]))
+                if (6 == sscanf(BSSIDstr.c_str(), "%x:%x:%x:%x:%x:%x", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]))
                 {
-                    for (int ii = 0; ii < 6; ii++)
+                    for (int ii = 0; ii < 6; ++ii)
                     {
                         slave.peer_addr[ii] = (uint8_t)mac[ii];
                     }
@@ -76,6 +73,7 @@ void SlaveScan()
                 slave.channel = ESPNOW_CHANNEL;
                 slave.encrypt = 0;
                 slaveFound = true;
+                // for up to 20 slaves (without crypting) must delete the break;
                 break;
             }
         }
@@ -83,31 +81,63 @@ void SlaveScan()
     WiFi.scanDelete();
 }
 
+// check if a slave connected, otherwise start connecting slaves
 bool manageSlave()
 {
+    searchingSlaves();
     if (slave.channel == ESPNOW_CHANNEL)
     {
+        const esp_now_peer_info_t *peer = &slave;
         const uint8_t *peer_addr = slave.peer_addr;
         bool exists = esp_now_is_peer_exist(peer_addr);
         if (!exists)
         {
+            // Slave not paired, attempt pair
             Serial.print("Slave Status: ");
-            esp_err_t addStatus = esp_now_add_peer(&slave);
+            esp_err_t addStatus = esp_now_add_peer(peer);
             if (addStatus == ESP_OK)
             {
-                Serial.println("Pairing erfolgreich");
+                // Pair success
+                Serial.println("Pair success");
+                return true;
+            }
+            else if (addStatus == ESP_ERR_ESPNOW_NOT_INIT)
+            {
+                // How did we get so far!!
+                Serial.println("ESPNOW Not Init");
+                return false;
+            }
+            else if (addStatus == ESP_ERR_ESPNOW_ARG)
+            {
+                Serial.println("Invalid Argument");
+                return false;
+            }
+            else if (addStatus == ESP_ERR_ESPNOW_FULL)
+            {
+                Serial.println("Peer list full");
+                return false;
+            }
+            else if (addStatus == ESP_ERR_ESPNOW_NO_MEM)
+            {
+                Serial.println("Out of memory");
+                return false;
+            }
+            else if (addStatus == ESP_ERR_ESPNOW_EXIST)
+            {
+                Serial.println("Peer Exists");
                 return true;
             }
             else
             {
-                Serial.println("Pairing Fehler");
+                Serial.println("Not sure what happened");
                 return false;
             }
         }
     }
     else
     {
-        Serial.println("Kein Slave zum Verarbeiten gefunden");
+        // No slave found to process
+        Serial.println("No Slave found to process");
         return false;
     }
     return true;
