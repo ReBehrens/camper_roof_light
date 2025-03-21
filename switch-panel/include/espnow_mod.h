@@ -8,24 +8,24 @@
 // Strukturen für Schalter- und Relais-Status
 typedef struct
 {
-    bool S1;
-    bool S2;
-    bool S3;
-    bool S4;
-    bool S5;
+    bool S1 = 0;
+    bool S2 = 0;
+    bool S3 = 0;
+    bool S4 = 0;
+    bool S5 = 0;
 } SWITCH_POSITION;
 
 typedef struct
 {
-    bool R1;
-    bool R2;
-    bool R3;
-    bool R4;
+    bool R1 = 0;
+    bool R2 = 0;
+    bool R3 = 0;
+    bool R4 = 0;
 } RELAIS_STATS;
 
 // Funktionsprototypen
-void espNowSetup();
-void espNowLoop();
+void espNowFirstSetup();
+void espNowSecondSetup();
 void InitESPNow();
 void slaveScan();
 bool manageSlave();

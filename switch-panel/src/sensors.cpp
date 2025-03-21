@@ -69,9 +69,22 @@ float getTemp(DeviceAddress deviceAddress)
 {
     sensors.requestTemperatures();
     float tempC = sensors.getTempC(deviceAddress);
+
     if (tempC == DEVICE_DISCONNECTED_C)
     {
-        Serial.println("Fehler: Temperatur konnte nicht gelesen werden.");
+        if (debugMode)
+        {
+            Serial.println("Error: Could not read temp. data");
+
+            for (uint8_t i = 0; i < 8; i++)
+            {
+                // zero pad the address if necessary
+                if (deviceAddress[i] < 16)
+                    Serial.print("0");
+                Serial.print(deviceAddress[i], HEX);
+            }
+            Serial.println("");
+        }
         return 999.0;
     }
     return tempC;

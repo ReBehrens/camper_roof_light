@@ -36,13 +36,11 @@ void switchesLoop()
     {
         Serial.println("vcc on");
         analogWrite(LED6, 10);
-        engineOn = true;
     }
     else
     {
         Serial.println("vcc off");
         analogWrite(LED6, LOW);
-        engineOn = false;
     }
 
     // Schalter auslesen
@@ -86,4 +84,29 @@ void switchesLoop()
     {
         logo(engineOn);
     }
+}
+
+bool getQs1()
+{
+    return qs1;
+}
+bool getQs2()
+{
+    return qs2;
+}
+bool getQs3()
+{
+    return qs3;
+}
+bool getQs4()
+{
+    return qs4;
+}
+bool getQs5()
+{
+    return qs5;
+}
+bool isEngineOn()
+{
+    return engineOn;
 }

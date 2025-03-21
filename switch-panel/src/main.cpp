@@ -6,31 +6,46 @@
 #include "switches.h"
 
 unsigned long timeStamp = 0;
+int warmup = 0;
 
 void setup()
 {
-    Serial.begin(115200);
+    Serial.println("Start Setup");
     displaySetup();
+    startSystem();
+    Serial.begin(115200);
+    espNowFirstSetup();
     sensorsSetup();
-    espNowSetup();
     switchesSetup();
+    espNowSecondSetup();
+    Serial.println("Setup Done");
 }
 
 void loop()
 {
-    if (!getSlaveFound)
-        slaveScan();
-
-    if (getSlaveFound)
+    Serial.println("Start loop");
+    Serial.println(getSlaveFound());
+    if (!getSlaveFound())
     {
+        Serial.println("Start search");
+        slaveScan();
+    }
+
+    if (getSlaveFound())
+    {
+        Serial.println();
+        Serial.println("connecting");
         bool isPaired = manageSlave();
+        Serial.println(warmup);
         if (isPaired)
         {
             if (warmup == 0)
             {
                 timeStamp = millis();
+                setReadyTimeStamp(millis());
                 SendStatus();
                 ready();
+                warmup++;
             }
 
             if (warmup == 1)
@@ -50,5 +65,5 @@ void loop()
             Serial.println("Slave pair failed!");
         }
     }
-    delay(15); // kleiner Delay zur Schonung der CPU
+    delay(100); // kleiner Delay zur Schonung der CPU
 }

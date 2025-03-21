@@ -7,29 +7,31 @@
 // Hardware-Pin-Configuration
 // ─────────────────────────────
 // Inputs
-const uint8_t SW1 = 33;
-const uint8_t SW2 = 25;
-const uint8_t SW3 = 26;
-const uint8_t SW4 = 27;
-const uint8_t SW5 = 34;
-const uint8_t VCC = 36;
-const uint8_t LIGHT = 39;
+const char SW1 = 33;
+const char SW2 = 25;
+const char SW3 = 26;
+const char SW4 = 27;
+const char SW5 = 34;
+const char VCC = 36;
+const char LIGHT = 39;
 
 // Outputs
-const uint8_t LED1 = 19;
-const uint8_t LED2 = 18;
-const uint8_t LED3 = 5;
-const uint8_t LED4 = 17;
-const uint8_t LED5 = 16;
-const uint8_t LED6 = 23;
+const char LED1 = 19;
+const char LED2 = 18;
+const char LED3 = 5;
+const char LED4 = 17;
+const char LED5 = 16;
+const char LED6 = 23;
 
 // ─────────────────────────────
 // Sensor and peripheral configuration
 // ─────────────────────────────
 
 // OneWire for Temperature-Sensors
-const uint8_t ONE_WIRE_PIN = 15;
-const uint8_t TEMPERATURE_PRECISION = 12;
+// const uint8_t ONE_WIRE_PIN = 15;
+#define ONE_WIRE_PIN 15
+// const uint8_t TEMPERATURE_PRECISION = 12;
+#define TEMPERATURE_PRECISION 12
 
 // RTC
 #define DS3231_ADDRESS 0x68
@@ -42,9 +44,10 @@ const uint8_t DISPLAY_RESET_PIN = U8X8_PIN_NONE; // no Reset-connection
 // ─────────────────────────────
 // ESP-NOW / WLAN-Configuration
 // ─────────────────────────────
-static const char *WIFI_SSID = "Slave";
-static const char *WIFI_PASSWORD = "Slave_1_Password";
+static const String WIFI_SSID = "Slave";
+static const String WIFI_PASSWORD = "Slave_1_Password";
 const uint8_t ESPNOW_CHANNEL = 1;
+#define CHANNEL 1
 
 // ─────────────────────────────
 // Time-Delays (in Millis)
@@ -59,5 +62,4 @@ extern unsigned long timeStamp;
 const bool debugMode = false;
 // =============================
 
-static int warmup = 0;
 #endif // GLOBALS_H

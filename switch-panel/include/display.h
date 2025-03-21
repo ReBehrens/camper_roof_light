@@ -16,5 +16,8 @@ void lightActiv();
 void temperature();
 void clockTime();
 void searchingSlaves();
+void startSystem();
+
+void setReadyTimeStamp(unsigned long currentMillis);
 
 #endif // DISPLAY_H

@@ -138,10 +138,10 @@ void ready()
       if (millis() > START_INTERVAL + readyTimeStamp)
       {
         rWhileStop = true;
+        return;
       }
     }
     u8g2.clearBuffer();
-    warmup++;
   }
 }
 
@@ -170,7 +170,7 @@ void lightActiv()
   u8g2.drawUTF8(61, 46, "H");
 
   //-----light option
-  if (getQs1)
+  if (getQs1())
   {
     // front light
     u8g2.drawBox(LBox1PosH, LBox1PosV, LBoxL, LBoxB);
@@ -182,7 +182,7 @@ void lightActiv()
     //..
   }
 
-  if (getQs2)
+  if (getQs2())
   {
     // right light
     u8g2.drawBox(LBox2PosH, LBox2PosV, LBoxB, LBoxL);
@@ -194,7 +194,7 @@ void lightActiv()
     //..
   }
 
-  if (getQs3)
+  if (getQs3())
   {
     // rear light
     u8g2.drawBox(LBox3PosH, LBox3PosV, LBoxL, LBoxB);
@@ -206,7 +206,7 @@ void lightActiv()
     //..
   }
 
-  if (getQs4)
+  if (getQs4())
   {
     // left light
     u8g2.drawBox(LBox4PosH, LBox4PosV, LBoxB, LBoxL);
@@ -241,6 +241,13 @@ void clockTime()
   // Holt die aktuelle Zeit von der RTC
   extern RTC_DS3231 rtc;
   DateTime now = rtc.now();
+  if (debugMode)
+  {
+    Serial.print(now.hour(), DEC);
+    Serial.print(':');
+    Serial.println(now.minute(), DEC);
+  }
+
   u8g2.setFont(u8g2_font_t0_12_tr);
   u8g2.setCursor(50, 20);
   u8g2.print(now.hour(), DEC);
@@ -257,4 +264,21 @@ void searchingSlaves()
   if (debugMode)
     warning();
   u8g2.sendBuffer();
+}
+
+void startSystem()
+{
+  {
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_t0_12_tf);
+    u8g2.drawUTF8(25, 15, "Start System");
+    if (debugMode)
+      warning();
+    u8g2.sendBuffer();
+  }
+}
+
+void setReadyTimeStamp(unsigned long currentMillis)
+{
+  readyTimeStamp = currentMillis;
 }
