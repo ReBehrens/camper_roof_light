@@ -11,7 +11,8 @@ const char SW1 = 33;
 const char SW2 = 25;
 const char SW3 = 26;
 const char SW4 = 27;
-const char SW5 = 34;
+const char SW5 = 34; // interior light
+const char SW6 = 32; // flasher
 const char VCC = 36;
 const char LIGHT = 39;
 
@@ -20,8 +21,10 @@ const char LED1 = 19;
 const char LED2 = 18;
 const char LED3 = 5;
 const char LED4 = 17;
-const char LED5 = 16;
-const char LED6 = 23;
+const char LED5 = 16; // interior light
+const char LED6 = 23; // VCC
+const char LED7 = 4;  // flasher F/B
+const char LED8 = 0;  // flasher R/L
 
 // ─────────────────────────────
 // Sensor and peripheral configuration

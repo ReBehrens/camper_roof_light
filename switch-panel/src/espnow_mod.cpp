@@ -153,6 +153,8 @@ void SendStatus()
     SP.S3 = getQs3();
     SP.S4 = getQs4();
     SP.S5 = getQs5();
+    SP.S6 = getQs6();
+    SP.S7 = getQs7();
 
     uint8_t data[sizeof(SP)];
     memcpy(data, &SP, sizeof(SP));
@@ -173,6 +175,12 @@ void SendStatus()
             Serial.println(SP.S3);
             Serial.print("Switch4 = ");
             Serial.println(SP.S4);
+            Serial.print("Switch5 = ");
+            Serial.println(SP.S5);
+            Serial.print("Switch6 = ");
+            Serial.println(SP.S6);
+            Serial.print("Switch7 = ");
+            Serial.println(SP.S7);
         }
         else if (result == ESP_ERR_ESPNOW_NOT_INIT)
         {
@@ -235,6 +243,10 @@ void on_data_recv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
         Serial.print(RS.R3);
         Serial.print("Relais4 = ");
         Serial.print(RS.R4);
+        Serial.print("Relais6 = ");
+        Serial.print(RS.R6);
+        Serial.print("Relais7 = ");
+        Serial.print(RS.R7);
     }
 }
 

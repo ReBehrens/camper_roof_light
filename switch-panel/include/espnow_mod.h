@@ -13,6 +13,8 @@ typedef struct
     bool S3 = 0;
     bool S4 = 0;
     bool S5 = 0;
+    bool S6 = 0;
+    bool S7 = 0;
 } SWITCH_POSITION;
 
 typedef struct
@@ -21,6 +23,8 @@ typedef struct
     bool R2 = 0;
     bool R3 = 0;
     bool R4 = 0;
+    bool R6 = 0;
+    bool R7 = 0;
 } RELAIS_STATS;
 
 void espNowFirstSetup();
