@@ -15,7 +15,7 @@ void switchesSetup()
     pinMode(SW2, INPUT_PULLDOWN);
     pinMode(SW3, INPUT_PULLDOWN);
     pinMode(SW4, INPUT_PULLDOWN);
-    pinMode(SW5, INPUT_PULLDOWN);
+    pinMode(SW5, INPUT);
     pinMode(VCC, INPUT);
     pinMode(LIGHT, INPUT);
 
