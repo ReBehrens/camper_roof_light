@@ -22,17 +22,28 @@ void displaySetup()
   u8g2.begin();
 }
 
+void standbyLogo()
+{
+
+  clockTime();
+  temperature();
+}
+
 void logo(bool engineOn)
 {
   u8g2.clearBuffer();
 
-  if (!engineOn && (millis() > COOLDOWN + standyTimeStamp))
+  if (!engineOn && standbyDisplay)
   {
     standbyDisplay = true;
-    clockTime();
-    temperature();
+    standbyLogo();
   }
-  else
+  else if ((!engineOn && (millis() > COOLDOWN + standyTimeStamp)) && !standbyDisplay)
+  {
+    standbyDisplay = true;
+    standbyLogo();
+  }
+  else if (engineOn && standbyDisplay)
   {
     standbyDisplay = false;
   }
@@ -215,19 +226,34 @@ void clockTime()
 {
   extern RTC_DS3231 rtc;
   DateTime now = rtc.now();
+
+  // Debug output
   if (debugMode)
   {
-    Serial.print(now.hour(), DEC);
-    Serial.print(':');
-    Serial.println(now.minute(), DEC);
+    Serial.print(now.hour());
+    Serial.print(":");
+    Serial.println(now.minute());
   }
 
+  // Set font and cursor
   u8g2.setFont(u8g2_font_t0_12_tr);
   u8g2.setCursor(50, 20);
-  u8g2.print(now.hour(), DEC);
+
+  // Print leading zero if hour < 10
+  if (now.hour() < 10)
+  {
+    u8g2.print("0");
+  }
+  u8g2.print(now.hour());
+
   u8g2.print(":");
-  (now.minute() < 10) ? (u8g2.print("0")) : (0);
-  u8g2.print(now.minute(), DEC);
+
+  // Print leading zero if minute < 10
+  if (now.minute() < 10)
+  {
+    u8g2.print("0");
+  }
+  u8g2.print(now.minute());
 }
 
 void searchingSlaves()
