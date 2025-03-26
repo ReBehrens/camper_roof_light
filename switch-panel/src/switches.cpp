@@ -10,6 +10,8 @@ bool lqs1 = false, lqs2 = false, lqs3 = false, lqs4 = false, lqs6 = false, lqs7 
 static bool lastSw5 = false;                                                             // Toggle-Debounce for SW5
 static bool lastSw6 = false;                                                             // Toggle-Debounce for SW6
 int lastSWStatus = 0;                                                                    // 3-way Toggle (0 - 1 - 2)
+bool currentSw5 = false;
+bool currentSw6 = false;
 
 void switchesSetup()
 {
@@ -31,10 +33,8 @@ void switchesSetup()
     pinMode(LED8, OUTPUT);
 }
 
-void switchesLoop()
+void engineIsOn()
 {
-
-    engineOn = digitalRead(VCC);
     if (engineOn)
     {
         Serial.println("vcc on");
@@ -45,14 +45,21 @@ void switchesLoop()
         Serial.println("vcc off");
         analogWrite(LED6, LOW);
     }
+}
 
+void updateSensors()
+{
+    engineOn = digitalRead(VCC);
     qs1 = digitalRead(SW1);
     qs2 = digitalRead(SW2);
     qs3 = digitalRead(SW3);
     qs4 = digitalRead(SW4);
+    currentSw6 = digitalRead(SW6);
+    currentSw5 = digitalRead(SW5);
+}
 
-    bool currentSw6 = digitalRead(SW6);
-    Serial.println(digitalRead(SW6));
+void checkFlasherSwitch()
+{
     if (currentSw6 && !lastSw6)
     {
         if (lastSWStatus < 2)
@@ -80,21 +87,25 @@ void switchesLoop()
         break;
     }
 
-    // if (currentSw6 && !lastSw6)
-    // {
-    //     qs6 = !qs6;
-    //     qs7 = !qs7;
-    // }
     lastSw6 = currentSw6;
 
-    // Toggle-Logik for SW5
-    bool currentSw5 = digitalRead(SW5);
+    digitalWrite(LED7, qs6 ? HIGH : LOW);
+    digitalWrite(LED8, qs7 ? HIGH : LOW);
+}
+
+void checkInteriorLight()
+{
     if (currentSw5 && !lastSw5)
     {
         qs5 = !qs5;
     }
     lastSw5 = currentSw5;
 
+    analogWrite(LED5, qs5 ? 10 : LOW);
+}
+
+void checkChangesToSend()
+{
     // send update with espNow
     if ((qs1 != lqs1) || (qs2 != lqs2) || (qs3 != lqs3) || (qs4 != lqs4) || (qs6 != lqs6) || (qs7 != lqs7))
     {
@@ -106,16 +117,10 @@ void switchesLoop()
         lqs7 = qs7;
         SendStatus();
     }
+}
 
-    digitalWrite(LED1, qs1 ? HIGH : LOW);
-    digitalWrite(LED2, qs2 ? HIGH : LOW);
-    digitalWrite(LED3, qs3 ? HIGH : LOW);
-    digitalWrite(LED4, qs4 ? HIGH : LOW);
-    analogWrite(LED5, qs5 ? 10 : LOW);
-    digitalWrite(LED7, qs6 ? HIGH : LOW);
-    digitalWrite(LED8, qs7 ? HIGH : LOW);
-
-    // logo or Light-information on Display
+void checkChangesForDisplay()
+{
     if (qs1 || qs2 || qs3 || qs4)
     {
         lightActiv();
@@ -163,4 +168,21 @@ bool getQs7()
 bool isEngineOn()
 {
     return engineOn;
+}
+
+void switchesLoop()
+{
+    updateSensors();
+    engineIsOn();
+
+    checkFlasherSwitch();
+    checkInteriorLight();
+
+    checkChangesToSend();
+    checkChangesForDisplay();
+
+    digitalWrite(LED1, qs1 ? HIGH : LOW);
+    digitalWrite(LED2, qs2 ? HIGH : LOW);
+    digitalWrite(LED3, qs3 ? HIGH : LOW);
+    digitalWrite(LED4, qs4 ? HIGH : LOW);
 }
